@@ -1,0 +1,22 @@
+Package: flashbackscrapR
+Type: Package
+Title: scraping flashback.org
+Version: 0.1.0
+Authors@R: person("Felix", "Lennert", email = "felix.lennert@icloud.com",
+                  role = c("aut", "cre"))
+Description: This package makes it easy to scrape the flashback.org forum.
+    It enables you to scrape main sections and sub-sections, their respective
+    thread titles and urls, and the threads' content.
+License: CC0
+Encoding: UTF-8
+LazyData: true
+Imports:
+    dplyr (>= 0.8.5),
+    lubridate (>= 1.7.4),
+    magrittr (>= 1.5),
+    purrr (>= 0.3.3),
+    rvest (>= 0.3.5),
+    stringr (>= 1.4.0),
+    tibble (>= 2.1.3),
+    xml2 (>= 1.2.2) 
+RoxygenNote: 7.1.0
