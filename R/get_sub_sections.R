@@ -5,7 +5,7 @@
 #' @param main_section_suffix a string containing a main section's suffix
 #' (which can be obtained using \code{\link{get_main_sections}})
 #'
-#' @return a character vector containing the sub-sections suffixes.
+#' @return a tibble containing the sub-sections' names and suffixes.
 #' Please note that sub-sections can also contain sub-sub-sections.
 #' These can be obtained using \code{\link{get_subsub}}
 #'
@@ -20,8 +20,18 @@ get_sub <- function(main_section_suffix) {
   }
   link <- paste0("https://www.flashback.org", main_section_suffix)
   page <- xml2::read_html(link)
-  sub <- rvest::html_nodes(page, xpath = "//td[contains(@class, 'td_forum')]") %>%
+
+  name <- rvest::html_nodes(page, xpath = "//td[contains(@class, 'td_forum')]") %>%
+    rvest::html_nodes("a") %>%
+    rvest::html_text()
+
+  suffix <- rvest::html_nodes(page, xpath = "//td[contains(@class, 'td_forum')]") %>%
     rvest::html_nodes("a") %>%
     rvest::html_attr("href")
-  return(sub)
+
+  return(tibble::tibble(
+    name = name,
+    suffix = suffix
+  ))
 }
+
