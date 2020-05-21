@@ -19,7 +19,7 @@
 #'
 #' @export
 get_thread_links <- function(suffix, cut_off = "2000-01-01", delay = TRUE) {
-  n_pages <- get_n_pages(suffix)
+  n_pages <- get_n_pages_links(suffix)
   if (is.na(n_pages) == TRUE) return(print("Error. No valid suffix supplied."))
 
   links <- generate_links(suffix, n_pages)
@@ -31,9 +31,10 @@ get_thread_links <- function(suffix, cut_off = "2000-01-01", delay = TRUE) {
   while((date_ind >= lubridate::ymd(cut_off)) && (i < length(links))) {
     i <- i + 1
     page <- xml2::read_html(links[[i]])
-    thread_dates[[i]] <- get_date(page)
+    thread_dates[[i]] <- get_date_links(page)
     date_ind <- tail(thread_dates[[i]], 1)
     thread_links[[i]] <- get_links(page)
+    thread_links[[i]] <- thread_links[[i]][check_flyttad(page)]
     if (delay == TRUE) {
       Sys.sleep(5)
     }
