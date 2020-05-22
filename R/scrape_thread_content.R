@@ -2,32 +2,50 @@
 #'
 #' Scrapes a certain thread
 #'
-#' @param suffix A string containing a thread's suffix
-#' (which can be obtained using \code{\link{get_suffixs}}). Suffixes need
-#' to start with '/'.
-#' @param folder_name A string. The function can automatically save the results
-#' in a csv-file. `folder_name` specifies the name of the folder. If nothing is
-#' specified, the function will export nothing.
-#' @param file_name A string. The function can automatically save the results
-#' in a csv-file. `file_name` specifies the name of the output file. It is not
-#' necessary to add `.csv`. If a folder name but no file name is provided,
-#' \code{\link{file_name}}) defaults to `scrape_[YYYY-MM-DD].csv`.
-#' @param WINDOWS Set to true if you are on a Windows machine and want to export
-#' the data in a .csv file.
-#' @param delay flashback.org's robots.txt-file asks for putting a five
-#' second delay between each iteration. You can ignore that by setting
-#' `delay = FALSE`.
+#' @param suffix A character string containing a thread's suffix (which can be
+#' obtained using \code{\link{get_thread_links()}}). Suffixes need to start with
+#' \code{/}.
+#' @param export_csv A logical vector. Defaults to \code{FALSE}. The function
+#' can automatically save the output in a csv file. If \code{export_csv = TRUE}
+#' , a csv file is exported. The output folder can be specified using the
+#' \code{folder} argument.
+#' @param folder_name A character string which specifies the name of the folder
+#' the output should be saved in. The folder's name is added to the path of the
+#' current working directory which can be obtained using \code{getwd()} and
+#' modified with \code{setwd()}. If nothing is specified and
+#' \code{export_csv = TRUE}, the function will export the csv file straight into
+#' the working directory.
+#' @param file_name A character string which specifies the name of the output
+#' file. It is not necessary to add `.csv`. If no file name is provided,
+#' \code{file_name} defaults to \code{scrape_[YYYY-MM-DD].csv}.
+#' @param delay A logical vector, defaults to \code{TRUE}. flashback.org's
+#' robots.txt-file asks for putting a five second delay between each iteration.
+#' You can deliberately ignore this by setting \code{delay = FALSE}. Note that
+#' THIS IS NOT RECOMMENDED!
 #'
 #' @return A character vector containing the links.
 #'
 #' @examples
-#' scrape_thread_content(suffix = "/t3145103", folder_name = NULL) #debug!!!!!
+#' scrape_thread_content(suffix = "/t3145103", export_csv = TRUE, folder_name = "results", file_name = "test", delay = TRUE)
 #'
 #' @export
-scrape_thread_content <- function(suffix, folder_name = NULL, file_name = NULL, WINDOWS = FALSE) {
+scrape_thread_content <- function(suffix, export_csv = FALSE, folder_name = NULL, file_name = NULL, delay = TRUE) {
   n_pages <- get_n_pages_thread(suffix = suffix)
   url_vec <- generate_links(suffix = suffix, n_pages = n_pages)
-  pages <- purrr::map(url_vec, xml2::read_html)
+
+  if (delay == TRUE) {
+    pages <- purrr::map(url_vec, ~{
+      Sys.sleep(5)
+      xml2::read_html(.x)
+    })
+  }
+
+  if (delay == FALSE) {
+    pages <- purrr::map(url_vec, ~{
+      xml2::read_html(.x)
+    })
+  }
+
   post_and_pattern_tbl <- tibble::tibble(
     posting = purrr::map(pages, get_posting) %>% unlist(),
     pattern = purrr::map(pages, get_quote_pattern) %>% purrr::reduce(paste(sep = "|"))
@@ -41,14 +59,6 @@ scrape_thread_content <- function(suffix, folder_name = NULL, file_name = NULL, 
     posting_wo_quote = remove_quotes(post_and_pattern_tbl$posting, post_and_pattern_tbl$pattern),
     quoted_user = purrr::map(pages, get_quoted_user) %>% unlist()
   )
-  def_file_name <- dplyr::if_else(is.null(file_name),
-                                  paste0("scrape", "_", as.character(lubridate::today), ".csv"),
-                                  file_name)
-  if (is.null(folder_name) == FALSE & WINDOWS == FALSE) {
-    readr::write_csv(output_tbl, paste(folder_name, def_file_name, sep = "/"))
-  }
-  if (is.null(folder_name) == FALSE & WINDOWS == TRUE) {
-    readr::write_csv(output_tbl, paste(folder_name, def_file_name, sep = "\\"))
-  }
+  if (export_csv == TRUE) save_it(folder_name, file_name, output_tbl)
   return(output_tbl)
 }

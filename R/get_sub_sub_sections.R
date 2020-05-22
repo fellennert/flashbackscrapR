@@ -1,12 +1,12 @@
 #' Get sub-sub-sections
 #'
-#' Returns the sub-sub-sections' names suffixes
+#' Returns the sub-sub-sections' names and link suffixes
 #'
-#' @param sub_section_suffix a string containing a sub-section's suffix
+#' @param sub_section_suffix A string containing a sub-section's suffix
 #' (which can be obtained using \code{\link{get_sub_sections}}). Suffixes need
 #' to start with '/'.
 #'
-#' @return A tibble with the sub-sub-sections' names and suffixes. If there are
+#' @return A tibble with the sub-sub-sections' titles and suffixes. If there are
 #' no sub-sub-sections, it is `NULL` and a warning is printed.
 #'
 #' @examples
@@ -24,7 +24,7 @@ get_subsub <- function(sub_section_suffix) {
     rvest::html_nodes("a") %>%
     rvest::html_text()
 
-  tbl <- if(length(suffix) != 0) {
+  tbl <- if (length(suffix) != 0) {
     tibble::tibble(
       name = name,
       suffix = suffix

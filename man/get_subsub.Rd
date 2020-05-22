@@ -7,17 +7,16 @@
 get_subsub(sub_section_suffix)
 }
 \arguments{
-\item{sub_section_suffix}{a string containing a sub-section's suffix
+\item{sub_section_suffix}{A string containing a sub-section's suffix
 (which can be obtained using \code{\link{get_sub_sections}}). Suffixes need
 to start with '/'.}
 }
 \value{
-a tibble with two columns: `sub_section` contains the sub-section's
-suffix and `sub_sub_section` the sub-sub-sections suffixes.
-If there are no sub-sub-sections, `sub_sub_section` is `NULL`.
+A tibble with the sub-sub-sections' titles and suffixes. If there are
+no sub-sub-sections, it is `NULL` and a warning is printed.
 }
 \description{
-Returns the sub-sub-sections' names suffixes
+Returns the sub-sub-sections' names and link suffixes
 }
 \examples{
 get_subsub("/f243")

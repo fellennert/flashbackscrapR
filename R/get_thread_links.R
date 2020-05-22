@@ -2,15 +2,15 @@
 #'
 #' Returns the links of threads within a section
 #'
-#' @param suffix A string containing a sub-section's suffix
+#' @param suffix A character string containing a sub-section's suffix
 #' (which can be obtained using \code{\link{get_sub_sections}}). Suffixes need
-#' to start with '/'.
-#' @param cut_off A character string containing the date at which the latest post in the
-#' thread should have been posted on. Has to be in the format "YYYY-MM-DD".
-#' Defaults to "2000-01-01".
+#' to start with \code{/}.
+#' @param cut_off A character string containing the date at which the latest
+#' post in the thread should had been posted on. Has to be in the format
+#' \code{YYYY-MM-DD}. Defaults to \code{"2000-01-01"}.
 #' @param delay flashback.org's robots.txt-file asks for putting a five
-#' second delay between each iteration. You can ignore that by setting
-#' `delay = FALSE`.
+#' second delay between each iteration. You can deliberately ignore this by
+#' setting \code{delay = FALSE}. Note that THIS IS NOT RECOMMENDED!
 #'
 #' @return A character vector containing the links.
 #'

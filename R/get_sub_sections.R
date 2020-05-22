@@ -1,13 +1,14 @@
 #' Get sub-sections
 #'
-#' Returns the sub-sections' names and suffixes
+#' Returns the sub-sections' names and link suffixes
 #'
-#' @param main_section_suffix a string containing a main section's suffix
-#' (which can be obtained using \code{\link{get_main_sections}})
+#' @param main_section_suffix A character string containing a main section's
+#' suffix (which can be obtained using \code{\link{get_main_sections}}). Needs
+#' to start with \ode{/}.
 #'
-#' @return a tibble containing the sub-sections' names and suffixes.
-#' Please note that sub-sections can also contain sub-sub-sections.
-#' These can be obtained using \code{\link{get_subsub}}
+#' @return A tibble containing the sub-sections' titles and suffixes. Please
+#' note that sub-sections can also contain sub-sub-sections. These can be
+#' obtained using \code{\link{get_subsub}}.
 #'
 #' @examples
 #' get_sub("/f4")

@@ -7,16 +7,17 @@
 get_sub(main_section_suffix)
 }
 \arguments{
-\item{main_section_suffix}{a string containing a main section's suffix
-(which can be obtained using \code{\link{get_main_sections}})}
+\item{main_section_suffix}{A string containing a main section's suffix
+(which can be obtained using \code{\link{get_main_sections}}). Needs to start
+with `/`.}
 }
 \value{
-a character vector containing the sub-sections suffixes.
-Please note that sub-sections can also contain sub-sub-sections.
-These can be obtained using \code{\link{get_subsub}}
+A tibble containing the sub-sections' titles and suffixes. Please
+note that sub-sections can also contain sub-sub-sections. These can be
+obtained using \code{\link{get_subsub}}.
 }
 \description{
-Returns the sub-sections' names and suffixes
+Returns the sub-sections' names and link suffixes
 }
 \examples{
 get_sub("/f4")

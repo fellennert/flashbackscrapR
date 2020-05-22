@@ -2,9 +2,10 @@
 #'
 #' Returns the main sections' names and suffixes
 #'
-#' @param mainpage the flashback.org homepage; default value suffices
+#' @param mainpage The flashback.org homepage; default value suffices.
 #'
-#' @return a tibble with two columns: 'name' and 'suffix'
+#' @return A tibble with two columns: 'name' and 'suffix'. The former indicates
+#' the section's name, the latter its link's suffix.
 #'
 #' @examples
 #' get_main_sections()

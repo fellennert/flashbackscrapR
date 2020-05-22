@@ -193,7 +193,7 @@ get_quoted_user <- function(page) {
   cit_user <- character(length = length(text))
   for (j in 1:length(text)){
     temp <- stringr::str_split(text[j], "postat av")[[1]][2]
-    cit_user[j] <- word(stringr::str_trim(temp), 1)
+    cit_user[j] <- stringr::word(stringr::str_trim(temp), 1)
   }
   return(cit_user)
 }
@@ -203,9 +203,9 @@ get_quoted_user <- function(page) {
 remove_quotes <- function(posting, pattern) {
   posting_tbl <- tibble::enframe(posting)
   postings_wo_quotes <- posting_tbl %>%
-    filter(!stringr::str_detect(value, "^Citat Ursprungligen postat av"))
+    dplyr::filter(!stringr::str_detect(value, "^Citat Ursprungligen postat av"))
   postings_w_quotes <- posting_tbl %>%
-    filter(stringr::str_detect(value, "^Citat Ursprungligen postat av"))
+    dplyr::filter(stringr::str_detect(value, "^Citat Ursprungligen postat av"))
   postings_w_quotes$text_wo_cit <- character(length = nrow(postings_w_quotes))
 
   for (i in 1:nrow(postings_w_quotes)) {
@@ -217,8 +217,18 @@ remove_quotes <- function(posting, pattern) {
   }
 
   output_tbl <- postings_w_quotes %>%
-    select(name, value = text_wo_cit) %>%
-    bind_rows(postings_wo_quotes) %>%
-    arrange(name)
+    dplyr::select(name, value = text_wo_cit) %>%
+    dplyr::bind_rows(postings_wo_quotes) %>%
+    dplyr::arrange(name)
   return(output_tbl$value)
+}
+
+# 5. save it
+save_it <- function(folder_name, file_name, output_tbl) {
+  date_chr <- as.character(lubridate::today())
+
+  if (is.null(file_name) == TRUE) {
+    file_name <- paste0("scrape-", as.character(lubridate::today()))
+  }
+  readr::write_csv(output_tbl, file.path(folder_name, paste0(file_name, ".csv")))
 }
