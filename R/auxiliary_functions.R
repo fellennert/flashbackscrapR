@@ -223,7 +223,7 @@ remove_quotes <- function(posting, pattern) {
   return(output_tbl$value)
 }
 
-# 5. save it
+# (5.) save it
 save_it <- function(folder_name, file_name, output_tbl) {
   date_chr <- as.character(lubridate::today())
 
