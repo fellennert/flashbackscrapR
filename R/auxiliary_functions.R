@@ -43,6 +43,16 @@ get_links <- function(page) {
   return(threads)
 }
 
+get_thread_title <- function(page) {
+  threads <- rvest::html_nodes(page,
+                        xpath="//td[contains(@class, 'td_title')]") %>%
+    rvest::html_text()
+  threads <- threads[stringr::str_detect(threads, "\\d+.visningar")]
+  thread_name <- stringr::str_extract(threads, "\\t[[:print:]]+\\n")
+  thread_name <- stringr::str_replace_all(thread_name, "\\t|\\n", "")
+  return(thread_name)
+}
+
 get_date_links <- function(page) {
   date <- rvest::html_nodes(page, ".td_last_post div") %>%
     rvest::html_text()
