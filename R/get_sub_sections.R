@@ -4,7 +4,7 @@
 #'
 #' @param main_section_suffix A character string containing a main section's
 #' suffix (which can be obtained using \code{\link{get_main_sections}}). Needs
-#' to start with \ode{/}.
+#' to start with \code{/}.
 #'
 #' @return A tibble containing the sub-sections' titles and suffixes. Please
 #' note that sub-sections can also contain sub-sub-sections. These can be
