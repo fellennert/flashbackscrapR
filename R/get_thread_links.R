@@ -21,7 +21,7 @@
 #' get_thread_links(suffix = "/f245", cut_off = "2020-05-01", title = TRUE, delay = TRUE)
 #'
 #' @export
-get_thread_links <- function(suffix, cut_off = "2000-01-01", title = TRUE, delay = TRUE) {
+get_thread_links <- function(suffix, cut_off = "2000-01-01", title = TRUE, delay = TRUE, pure_suffix = FALSE) {
   n_pages <- get_n_pages_links(suffix)
   if (is.na(n_pages) == TRUE) return(print("Error. No valid suffix supplied."))
 
@@ -45,6 +45,7 @@ get_thread_links <- function(suffix, cut_off = "2000-01-01", title = TRUE, delay
       Sys.sleep(5)
     }
   }
+  if (pure_suffix == TRUE) return(thread_links %>% purrr::compact() %>% purrr::reduce(c))
   if (title == FALSE) {
     return(tibble::tibble(
       links = thread_links %>% purrr::compact() %>% purrr::reduce(c),
