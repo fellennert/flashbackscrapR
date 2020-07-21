@@ -7,10 +7,11 @@
 get_main_sections(mainpage = "https://www.flashback.org")
 }
 \arguments{
-\item{mainpage}{the flashback.org homepage; default value suffices}
+\item{mainpage}{The flashback.org homepage; default value suffices.}
 }
 \value{
-a tibble with two columns: 'name' and 'suffix'
+A tibble with two columns: 'name' and 'suffix'. The former indicates
+the section's name, the latter its link's suffix.
 }
 \description{
 Returns the main sections' names and suffixes

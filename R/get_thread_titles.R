@@ -58,7 +58,7 @@ get_thread_titles <- function(suffix, delay = TRUE) {
       )
     )
   }
-}
+
 
 
 

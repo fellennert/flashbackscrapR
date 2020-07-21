@@ -7,9 +7,9 @@
 get_sub(main_section_suffix)
 }
 \arguments{
-\item{main_section_suffix}{A string containing a main section's suffix
-(which can be obtained using \code{\link{get_main_sections}}). Needs to start
-with `/`.}
+\item{main_section_suffix}{A character string containing a main section's
+suffix (which can be obtained using \code{\link{get_main_sections}}). Needs
+to start with \code{/}.}
 }
 \value{
 A tibble containing the sub-sections' titles and suffixes. Please
