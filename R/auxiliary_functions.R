@@ -211,6 +211,7 @@ get_quoted_user <- function(page) {
 # (4.) clean postings
 
 remove_quotes <- function(posting, pattern) {
+  if (sum(stringr::str_length(pattern)) == 0) return(posting)
   posting_tbl <- tibble::enframe(posting)
   postings_wo_quotes <- posting_tbl %>%
     dplyr::filter(!stringr::str_detect(value, "^Citat Ursprungligen postat av"))
