@@ -150,10 +150,14 @@ get_time <- function(page) {
 # (3.3) authors' names
 
 get_author_name <- function(page) {
-  return(rvest::html_nodes(page, ".post-user-username") %>%
-           rvest::html_text() %>%
-           stringr::str_remove_all("\n") %>%
-           stringr::str_remove_all("\t"))
+  rvest::html_nodes(page, ".post-row:nth-child(1) .post-left") %>%
+    rvest::html_text() %>%
+    stringr::str_remove_all("\n") %>%
+    stringr::str_remove_all("\t") %>%
+    enframe() %>%
+    tidyr::separate(value, sep = "fler inlägg av ", into = c("drop_it", "author")) %>%
+    tidyr::separate(author, sep = "Hitta alla inlägg", into = c("author", "drop_it_2")) %>%
+    dplyr::pull(author)
 }
 
 # (3.4) authors' urls
