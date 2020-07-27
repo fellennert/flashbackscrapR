@@ -193,6 +193,17 @@ get_quote_pattern <- function(page) {
   return(paste(unique(stringr::str_sub(quotes, start = -(2/3*stringr::str_length(quotes)))), collapse = "|"))
 }
 
+get_quotes <- function(page) {
+  quotes <- rvest::html_nodes(page, xpath = "//div[contains(@class, 'post-bbcode-quote')]") %>%
+    rvest::html_text() %>%
+    stringr::str_remove_all("\n") %>%
+    stringr::str_remove_all("\r") %>%
+    stringr::str_remove_all("\t") %>%
+    stringr::str_replace_all("[^[:alnum:]]", " ") %>%
+    stringr::str_squish()
+  quotes[stringr::str_detect(quotes, "^Citat")]
+}
+
 # (3.7) cited users
 
 get_quoted_user <- function(page) {
@@ -213,6 +224,63 @@ get_quoted_user <- function(page) {
 }
 
 # (4.) clean postings
+
+remove_quote_not_beginning <- function(value, quote) {
+  temp <- stringr::str_split(value, quote) %>% map(stringr::str_squish)
+  map_chr(temp, paste, collapse = " ")
+}
+
+remove_quotes_beginning_between <- function(multiple_quotes_beginning_and_between_list) {
+  output_tbl <- vector(mode = "list", length = length(multiple_quotes_beginning_and_between_list))
+    for (i in seq_along(multiple_quotes_beginning_and_between_list)) {
+      temp_tbl <- multiple_quotes_beginning_and_between_list[[i]]
+      output_tbl[[i]] <- remove_quotes_beginning_between_auxiliary(name = temp_tbl[[1]],
+                                                                   value = temp_tbl[[2]],
+                                                                   quote = temp_tbl[[5]],
+                                                                   second_quote = temp_tbl[[6]])
+    }
+    dplyr::bind_rows(output_tbl)
+}
+
+remove_quotes_beginning_between_auxiliary <- function(name, value, quote, second_quote) {
+  temp <- stringr::str_split(string = value, pattern = quote) %>%
+    purrr::map(2) %>%
+    unlist() %>%
+    stringr::str_split_fixed(pattern = second_quote, n = 2)
+  temp <- c(temp[1:(nrow(temp)-1), 1], temp[nrow(temp), 2]) %>%
+    paste(collapse = '') %>%
+    stringr::str_squish()
+
+  tibble::tibble(
+    name = name,
+    posting = value[[1]],
+    posting_wo_quote = temp
+  )
+}
+
+remove_quotes_between <- function(multiple_quotes_between) {
+  output_tbl <- vector(mode = "list", length = length(multiple_quotes_between))
+    for (i in seq_along(multiple_quotes_between)) {
+      temp_tbl <- multiple_quotes_between[[i]]
+      output_tbl[[i]] <- remove_quotes_between_auxiliary(name = temp_tbl[[1]],
+                                                         value = temp_tbl[[2]],
+                                                         quote = temp_tbl[[5]]
+                                                                   )
+    }
+    dplyr::bind_rows(output_tbl)
+}
+
+remove_quotes_between_auxiliary <- function(name, value, quote) {
+  temp <- value[[1]]
+  for (i in seq_along(quote)) {
+    temp <- stringr::str_split(temp, quote[[i]]) %>% purrr::map_chr(paste, collapse = " ")
+  }
+  tibble::tibble(
+    name = name,
+    posting = value[[1]],
+    posting_wo_quote = temp %>% stringr::str_squish()
+  )
+}
 
 remove_quotes <- function(posting, pattern) {
   if (sum(stringr::str_length(pattern)) == 0) return(posting)
@@ -236,6 +304,80 @@ remove_quotes <- function(posting, pattern) {
     dplyr::bind_rows(postings_wo_quotes) %>%
     dplyr::arrange(name)
   return(output_tbl$value)
+}
+
+get_content_remove_quotes <- function(page) {
+
+  quotes <- get_quotes(page)
+
+  pattern <- paste(quotes, collapse = "|")
+
+  posting <- get_posting(page) %>%
+    tibble::enframe() %>%
+    dplyr::mutate(reps = stringr::str_count(value, pattern))
+
+  if (length(quotes) == 0) return(posting %>%
+                                       dplyr::select(name, posting = value, posting_wo_quote = value))
+
+  no_quote <- posting %>%
+    dplyr::filter(reps == 0) %>%
+    select(name, posting = value, posting_wo_quote = value)
+
+  post_with_quote <- posting %>%
+    dplyr::filter(reps != 0) %>%
+    dplyr::group_by(name, value) %>%
+    tidyr::expand(rep_number = seq(1:reps)) %>%
+    mutate(reps = max(rep_number)) %>%
+    dplyr::bind_cols(enframe(quotes, name = NULL, value = "quote"))
+
+  quote_in_beginning <- post_with_quote %>%
+    dplyr::filter(reps == 1 &
+                    stringr::str_detect(value, "^Citat")) %>%
+    dplyr::mutate(no_quote = str_split_fixed(string = value, pattern = quote, n = 2) %>%
+                    purrr::pluck(2) %>%
+                    stringr::str_squish()) %>%
+    select(name, posting = value, posting_wo_quote = no_quote)
+
+  quote_not_in_beginning <- post_with_quote %>%
+    dplyr::filter(reps == 1 &
+                    stringr::str_detect(value, "^Citat") == FALSE) %>%
+    dplyr::mutate(no_quote = remove_quote_not_beginning(value, quote)) %>%
+    select(name, posting = value, posting_wo_quote = no_quote)
+
+  multiple_quotes_beginning_and_between <- post_with_quote %>%
+    dplyr::filter(stringr::str_detect(value, "^Citat") &
+                    reps > 1) %>%
+    dplyr::mutate(second_quote = dplyr::lead(quote) %>% tidyr::replace_na(" ")) %>%
+    group_by(name, .add = TRUE) %>%
+    dplyr::group_split() %>%
+    remove_quotes_beginning_between()
+
+  if (ncol(multiple_quotes_beginning_and_between) != 0) {
+    multiple_quotes_beginning_and_between <- distinct(multiple_quotes_beginning_and_between,
+                                                      name,
+                                                      .keep_all = TRUE)
+  }
+
+  multiple_quotes_between <- post_with_quote %>%
+    dplyr::filter(!stringr::str_detect(value, "^Citat") &
+                    reps > 1) %>%
+    dplyr::mutate(second_quote = dplyr::lead(quote) %>% tidyr::replace_na(" ")) %>%
+    group_by(name, .add = TRUE) %>%
+    dplyr::group_split() %>%
+    remove_quotes_between()
+
+  if (ncol(multiple_quotes_between) != 0) {
+    multiple_quotes_between <- distinct(multiple_quotes_between,
+                                        name,
+                                        .keep_all = TRUE)
+  }
+
+  dplyr::bind_rows(no_quote,
+            quote_in_beginning,
+            quote_not_in_beginning,
+            multiple_quotes_beginning_and_between,
+            multiple_quotes_between) %>%
+    dplyr::arrange(name)
 }
 
 # (5.) save it

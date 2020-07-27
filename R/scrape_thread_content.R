@@ -46,19 +46,15 @@ scrape_thread_content <- function(suffix, export_csv = FALSE, folder_name = NULL
     })
   }
 
-  post_and_pattern_tbl <- tibble::tibble(
-    posting = purrr::map(pages, get_posting) %>% unlist(),
-    pattern = purrr::map(pages, get_quote_pattern) %>% purrr::reduce(paste(sep = "|"))
-  )
   output_tbl <- tibble::tibble(
     url = suffix,
     date = lubridate::ymd(purrr::map(pages, get_date_thread) %>% unlist()),
     time = purrr::map(pages, get_time) %>% unlist(),
     author_name = purrr::map(pages, get_author_name) %>% unlist(),
-    posting = post_and_pattern_tbl$posting,
-    posting_wo_quote = remove_quotes(post_and_pattern_tbl$posting, post_and_pattern_tbl$pattern),
     quoted_user = purrr::map(pages, get_quoted_user) %>% unlist()
-  )
+  ) %>%
+    dplyr::bind_cols(purrr::map_dfr(pages, get_content_remove_quotes) %>% select(-name))
+
   if (export_csv == TRUE) save_it(folder_name, file_name, output_tbl)
   if (export_csv == FALSE & is.null(folder_name) == FALSE | is.null(file_name) == FALSE) {
     save_it(folder_name, file_name, output_tbl)
