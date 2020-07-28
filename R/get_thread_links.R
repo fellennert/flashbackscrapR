@@ -53,7 +53,7 @@ get_thread_links <- function(suffix, cut_off = "2000-01-01", delay = TRUE, pure_
       ) %>%
       dplyr::filter(date >= lubridate::ymd(cut_off)) %>%
       dplyr::pull(links)
-    )
+
 }
 
 
