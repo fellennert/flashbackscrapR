@@ -206,7 +206,7 @@ get_quotes <- function(page) {
 
 # one quote, not in the beginning of posting
 remove_quote_not_beginning <- function(value, quote) {
-  if (length(value) == 0) return(tibble::tibble(name))
+  if (length(value) == 0) return(value)
   temp <- stringr::str_split(value, quote) %>% purrr::map(stringr::str_squish)
   purrr::map_chr(temp, paste, collapse = " ")
 }
