@@ -1,8 +1,7 @@
-#######################################
-######### auxiliary functions #########
-#######################################
+# AUXILIARY FUNCTIONS -----------------------------------------------------
 
-# for get_links
+
+# FOR get_links AND get_title ---------------------------------------------
 
 get_n_pages_links <- function(section) {
   link <- paste0("https://www.flashback.org", section)
@@ -17,6 +16,7 @@ get_n_pages_links <- function(section) {
   return(n_pages)
 }
 
+
 generate_links <- function(suffix, n_pages) {
   n_pages <- 1:n_pages
   links <- character(length = length(n_pages))
@@ -26,32 +26,6 @@ generate_links <- function(suffix, n_pages) {
   return(links)
 }
 
-get_links <- function(page) {
-  threads <- rvest::html_nodes(page,
-                        xpath="//td[contains(@class, 'td_title')]") %>%
-    rvest::html_nodes("a") %>%
-    rvest::html_attr("href")
-  threads <- threads[stringr::str_detect(threads, "/t")]
-  threads <- stringr::str_split(threads, "l")
-  threads <- purrr::map_chr(threads, 1)
-  threads <- stringr::str_split(threads, "p")
-  threads <- purrr::map_chr(threads, 1)
-  threads <- stringr::str_split(threads, "s")
-  threads <- purrr::map_chr(threads, 1)
-  threads <- unique(threads)
-
-  return(threads)
-}
-
-get_thread_title <- function(page) {
-  threads <- rvest::html_nodes(page,
-                        xpath="//td[contains(@class, 'td_title')]") %>%
-    rvest::html_text()
-  threads <- threads[stringr::str_detect(threads, "\\d+.visningar")]
-  thread_name <- stringr::str_extract(threads, "\\t[[:print:]]+\\n")
-  thread_name <- stringr::str_replace_all(thread_name, "\\t|\\n", "")
-  return(thread_name)
-}
 
 get_date_links <- function(page) {
   date <- rvest::html_nodes(page, ".td_last_post div") %>%
@@ -72,6 +46,25 @@ get_date_links <- function(page) {
   return(lubridate::ymd(date))
 }
 
+
+get_links <- function(page) {
+  threads <- rvest::html_nodes(page,
+                        xpath="//td[contains(@class, 'td_title')]") %>%
+    rvest::html_nodes("a") %>%
+    rvest::html_attr("href")
+  threads <- threads[stringr::str_detect(threads, "/t")]
+  threads <- stringr::str_split(threads, "l")
+  threads <- purrr::map_chr(threads, 1)
+  threads <- stringr::str_split(threads, "p")
+  threads <- purrr::map_chr(threads, 1)
+  threads <- stringr::str_split(threads, "s")
+  threads <- purrr::map_chr(threads, 1)
+  threads <- unique(threads)
+
+  return(threads)
+}
+
+
 check_flyttad <- function(page) {
   check <- rvest::html_nodes(page, "#threadslist .text-center .fa") %>%
     rvest::html_attrs() %>%
@@ -79,13 +72,22 @@ check_flyttad <- function(page) {
   return(check != "fa fa-arrow-right")
 }
 
-# for scrape_thread
 
-#######################################
-############ scrape thread ############
-#######################################
+get_thread_title <- function(page) {
+  threads <- rvest::html_nodes(page,
+                        xpath="//td[contains(@class, 'td_title')]") %>%
+    rvest::html_text()
+  threads <- threads[stringr::str_detect(threads, "\\d+.visningar")]
+  thread_name <- stringr::str_extract(threads, "\\t[[:print:]]+\\n")
+  thread_name <- stringr::str_replace_all(thread_name, "\\t|\\n", "")
+  return(thread_name)
+}
 
-# (1.) get number of pages
+
+# FOR scrape_thread -------------------------------------------------------
+
+
+### 1st part: create variables to map over
 
 get_n_pages_thread <- function(suffix) {
   page <- xml2::read_html(paste0("https://www.flashback.org", suffix))
@@ -102,7 +104,6 @@ get_n_pages_thread <- function(suffix) {
   return(n_pages)
 }
 
-# (2.) generate links
 
 generate_links <- function(suffix, n_pages) {
   mainpage <- "https://www.flashback.org"
@@ -114,9 +115,8 @@ generate_links <- function(suffix, n_pages) {
   return(links)
 }
 
-# (3.) scrape singular pages
 
-# (3.1) date
+### 2nd part: acquire meta data
 
 get_date_thread <- function(page) {
   today <- as.character(lubridate::today())
@@ -138,7 +138,6 @@ get_date_thread <- function(page) {
   return(date)
 }
 
-# (3.2) time
 
 get_time <- function(page) {
   return(rvest::html_nodes(page, ".post-heading") %>%
@@ -147,64 +146,18 @@ get_time <- function(page) {
            purrr::flatten_chr())
 }
 
-# (3.3) authors' names
 
 get_author_name <- function(page) {
   rvest::html_nodes(page, ".post-row:nth-child(1) .post-left") %>%
     rvest::html_text() %>%
     stringr::str_remove_all("\n") %>%
     stringr::str_remove_all("\t") %>%
-    enframe() %>%
+    tibble::enframe() %>%
     tidyr::separate(value, sep = "fler inlägg av ", into = c("drop_it", "author")) %>%
     tidyr::separate(author, sep = "Hitta alla inlägg", into = c("author", "drop_it_2")) %>%
     dplyr::pull(author)
 }
 
-# (3.4) authors' urls
-
-get_author_url <- function(link) {
-  return(rvest::html_nodes(page, ".post-user-username") %>%
-           rvest::html_attr("href"))
-}
-
-# (3.5) postings' text -- with citations
-
-get_posting <- function(page) {
-  return(rvest::html_nodes(page, ".post_message") %>%
-           rvest::html_text() %>%
-           stringr::str_remove_all("\n") %>%
-           stringr::str_remove_all("\r") %>%
-           stringr::str_remove_all("\t") %>%
-           stringr::str_replace_all("[^[:alnum:]]", " ") %>%
-           stringr::str_squish())
-}
-
-# (3.6) quotes
-
-get_quote_pattern <- function(page) {
-  quotes <- rvest::html_nodes(page, xpath = "//div[contains(@class, 'post-bbcode-quote')]") %>%
-    rvest::html_text() %>%
-    stringr::str_remove_all("\n") %>%
-    stringr::str_remove_all("\r") %>%
-    stringr::str_remove_all("\t") %>%
-    stringr::str_replace_all("[^[:alnum:]]", " ") %>%
-    stringr::str_squish()
-  quotes <- quotes[stringr::str_detect(quotes, "^Citat")]
-  return(paste(unique(stringr::str_sub(quotes, start = -(2/3*stringr::str_length(quotes)))), collapse = "|"))
-}
-
-get_quotes <- function(page) {
-  quotes <- rvest::html_nodes(page, xpath = "//div[contains(@class, 'post-bbcode-quote')]") %>%
-    rvest::html_text() %>%
-    stringr::str_remove_all("\n") %>%
-    stringr::str_remove_all("\r") %>%
-    stringr::str_remove_all("\t") %>%
-    stringr::str_replace_all("[^[:alnum:]]", " ") %>%
-    stringr::str_squish()
-  quotes[stringr::str_detect(quotes, "^Citat")]
-}
-
-# (3.7) cited users
 
 get_quoted_user <- function(page) {
   text <- rvest::html_nodes(page, ".post_message") %>%
@@ -223,13 +176,43 @@ get_quoted_user <- function(page) {
   return(cit_user)
 }
 
-# (4.) clean postings
 
-remove_quote_not_beginning <- function(value, quote) {
-  temp <- stringr::str_split(value, quote) %>% map(stringr::str_squish)
-  map_chr(temp, paste, collapse = " ")
+### 3rd part: acquire postings (with and without quotes)
+
+## functions for acquiring postings and quotes
+
+get_posting <- function(page) {
+  return(rvest::html_nodes(page, ".post_message") %>%
+           rvest::html_text() %>%
+           stringr::str_remove_all("\n") %>%
+           stringr::str_remove_all("\r") %>%
+           stringr::str_remove_all("\t") %>%
+           stringr::str_replace_all("[^[:alnum:]]", " ") %>%
+           stringr::str_squish())
 }
 
+get_quotes <- function(page) {
+  quotes <- rvest::html_nodes(page, xpath = "//div[contains(@class, 'post-bbcode-quote')]") %>%
+    rvest::html_text() %>%
+    stringr::str_remove_all("\n") %>%
+    stringr::str_remove_all("\r") %>%
+    stringr::str_remove_all("\t") %>%
+    stringr::str_replace_all("[^[:alnum:]]", " ") %>%
+    stringr::str_squish()
+  quotes[stringr::str_detect(quotes, "^Citat")]
+}
+
+## auxiliary functions for removing quotes
+
+# one quote, not in the beginning of posting
+remove_quote_not_beginning <- function(value, quote) {
+  if (length(value) == 0) return(tibble::tibble(name))
+  temp <- stringr::str_split(value, quote) %>% purrr::map(stringr::str_squish)
+  purrr::map_chr(temp, paste, collapse = " ")
+}
+
+
+# multiple quotes, one in beginning of posting
 remove_quotes_beginning_between <- function(multiple_quotes_beginning_and_between_list) {
   output_tbl <- vector(mode = "list", length = length(multiple_quotes_beginning_and_between_list))
     for (i in seq_along(multiple_quotes_beginning_and_between_list)) {
@@ -248,9 +231,8 @@ remove_quotes_beginning_between_auxiliary <- function(name, value, quote, second
     unlist() %>%
     stringr::str_split_fixed(pattern = second_quote, n = 2)
   temp <- c(temp[1:(nrow(temp)-1), 1], temp[nrow(temp), 2]) %>%
-    paste(collapse = '') %>%
-    stringr::str_squish()
-
+    stringr::str_squish() %>%
+    paste(collapse = "")
   tibble::tibble(
     name = name,
     posting = value[[1]],
@@ -258,6 +240,8 @@ remove_quotes_beginning_between_auxiliary <- function(name, value, quote, second
   )
 }
 
+
+# multiple quotes, none in beginning of posting
 remove_quotes_between <- function(multiple_quotes_between) {
   output_tbl <- vector(mode = "list", length = length(multiple_quotes_between))
     for (i in seq_along(multiple_quotes_between)) {
@@ -265,7 +249,7 @@ remove_quotes_between <- function(multiple_quotes_between) {
       output_tbl[[i]] <- remove_quotes_between_auxiliary(name = temp_tbl[[1]],
                                                          value = temp_tbl[[2]],
                                                          quote = temp_tbl[[5]]
-                                                                   )
+                                                        )
     }
     dplyr::bind_rows(output_tbl)
 }
@@ -273,43 +257,22 @@ remove_quotes_between <- function(multiple_quotes_between) {
 remove_quotes_between_auxiliary <- function(name, value, quote) {
   temp <- value[[1]]
   for (i in seq_along(quote)) {
-    temp <- stringr::str_split(temp, quote[[i]]) %>% purrr::map_chr(paste, collapse = " ")
+    temp <- stringr::str_split(temp, quote[[i]]) %>%
+      purrr::map_chr(paste, collapse = " ")
   }
   tibble::tibble(
     name = name,
     posting = value[[1]],
-    posting_wo_quote = temp %>% stringr::str_squish()
+    posting_wo_quote = temp %>%
+      stringr::str_squish()
   )
 }
 
-remove_quotes <- function(posting, pattern) {
-  if (sum(stringr::str_length(pattern)) == 0) return(posting)
-  posting_tbl <- tibble::enframe(posting)
-  postings_wo_quotes <- posting_tbl %>%
-    dplyr::filter(!stringr::str_detect(value, "^Citat Ursprungligen postat av"))
-  postings_w_quotes <- posting_tbl %>%
-    dplyr::filter(stringr::str_detect(value, "^Citat Ursprungligen postat av"))
-  postings_w_quotes$text_wo_cit <- character(length = nrow(postings_w_quotes))
 
-  for (i in 1:nrow(postings_w_quotes)) {
-    if (length(stringr::str_split(postings_w_quotes$value[i], pattern = pattern, n = 2)[[1]]) == 2) {
-      postings_w_quotes$text_wo_cit[i] <- stringr::str_split(postings_w_quotes$value[i], pattern = pattern, n = 2)[[1]][[2]]
-    } else {
-      postings_w_quotes$text_wo_cit[i] <- paste0("flawed citation", postings_w_quotes$value[i])
-    }
-  }
-
-  output_tbl <- postings_w_quotes %>%
-    dplyr::select(name, value = text_wo_cit) %>%
-    dplyr::bind_rows(postings_wo_quotes) %>%
-    dplyr::arrange(name)
-  return(output_tbl$value)
-}
+# function that obtains postings and removes quotes
 
 get_content_remove_quotes <- function(page) {
-
   quotes <- get_quotes(page)
-
   pattern <- paste(quotes, collapse = "|")
 
   posting <- get_posting(page) %>%
@@ -317,43 +280,49 @@ get_content_remove_quotes <- function(page) {
     dplyr::mutate(reps = stringr::str_count(value, pattern))
 
   if (length(quotes) == 0) return(posting %>%
-                                       dplyr::select(name, posting = value, posting_wo_quote = value))
+                                       dplyr::select(name,
+                                                     posting = value,
+                                                     posting_wo_quote = value)
+                                  )
 
   no_quote <- posting %>%
     dplyr::filter(reps == 0) %>%
-    select(name, posting = value, posting_wo_quote = value)
+    dplyr::select(name,
+                  posting = value,
+                  posting_wo_quote = value
+                  )
 
   post_with_quote <- posting %>%
     dplyr::filter(reps != 0) %>%
     dplyr::group_by(name, value) %>%
     tidyr::expand(rep_number = seq(1:reps)) %>%
-    mutate(reps = max(rep_number)) %>%
-    dplyr::bind_cols(enframe(quotes, name = NULL, value = "quote"))
+    dplyr::mutate(reps = max(rep_number)) %>%
+    dplyr::bind_cols(tibble::enframe(quotes, name = NULL, value = "quote"))
 
   quote_in_beginning <- post_with_quote %>%
     dplyr::filter(reps == 1 &
                     stringr::str_detect(value, "^Citat")) %>%
-    dplyr::mutate(no_quote = str_split_fixed(string = value, pattern = quote, n = 2) %>%
+    dplyr::mutate(no_quote = stringr::str_split_fixed(string = value, pattern = quote, n = 2) %>%
                     purrr::pluck(2) %>%
                     stringr::str_squish()) %>%
-    select(name, posting = value, posting_wo_quote = no_quote)
+    dplyr::select(name, posting = value, posting_wo_quote = no_quote)
 
   quote_not_in_beginning <- post_with_quote %>%
     dplyr::filter(reps == 1 &
-                    stringr::str_detect(value, "^Citat") == FALSE) %>%
+                    !stringr::str_detect(value, "^Citat")) %>%
     dplyr::mutate(no_quote = remove_quote_not_beginning(value, quote)) %>%
-    select(name, posting = value, posting_wo_quote = no_quote)
+    dplyr::select(name, posting = value, posting_wo_quote = no_quote)
 
   multiple_quotes_beginning_and_between <- post_with_quote %>%
     dplyr::filter(stringr::str_detect(value, "^Citat") &
                     reps > 1) %>%
     dplyr::mutate(second_quote = dplyr::lead(quote) %>% tidyr::replace_na(" ")) %>%
-    group_by(name, .add = TRUE) %>%
+    dplyr::group_by(name, .add = TRUE) %>%
     dplyr::group_split() %>%
     remove_quotes_beginning_between()
 
   if (ncol(multiple_quotes_beginning_and_between) != 0) {
-    multiple_quotes_beginning_and_between <- distinct(multiple_quotes_beginning_and_between,
+    multiple_quotes_beginning_and_between <- dplyr::distinct(multiple_quotes_beginning_and_between,
                                                       name,
                                                       .keep_all = TRUE)
   }
@@ -362,12 +331,12 @@ get_content_remove_quotes <- function(page) {
     dplyr::filter(!stringr::str_detect(value, "^Citat") &
                     reps > 1) %>%
     dplyr::mutate(second_quote = dplyr::lead(quote) %>% tidyr::replace_na(" ")) %>%
-    group_by(name, .add = TRUE) %>%
+    dplyr::group_by(name, .add = TRUE) %>%
     dplyr::group_split() %>%
     remove_quotes_between()
 
   if (ncol(multiple_quotes_between) != 0) {
-    multiple_quotes_between <- distinct(multiple_quotes_between,
+    multiple_quotes_between <- dplyr::distinct(multiple_quotes_between,
                                         name,
                                         .keep_all = TRUE)
   }
@@ -380,7 +349,8 @@ get_content_remove_quotes <- function(page) {
     dplyr::arrange(name)
 }
 
-# (5.) save it
+### 4th part: save results
+
 save_it <- function(folder_name, file_name, output_tbl) {
   date_chr <- as.character(lubridate::today())
 

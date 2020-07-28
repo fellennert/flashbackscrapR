@@ -53,7 +53,7 @@ scrape_thread_content <- function(suffix, export_csv = FALSE, folder_name = NULL
     author_name = purrr::map(pages, get_author_name) %>% unlist(),
     quoted_user = purrr::map(pages, get_quoted_user) %>% unlist()
   ) %>%
-    dplyr::bind_cols(purrr::map_dfr(pages, get_content_remove_quotes) %>% select(-name))
+    dplyr::bind_cols(purrr::map_dfr(pages, get_content_remove_quotes) %>% dplyr::select(-name))
 
   if (export_csv == TRUE) save_it(folder_name, file_name, output_tbl)
   if (export_csv == FALSE & is.null(folder_name) == FALSE | is.null(file_name) == FALSE) {
