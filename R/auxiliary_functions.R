@@ -182,13 +182,46 @@ get_quoted_user <- function(page) {
 ## functions for acquiring postings and quotes
 
 get_posting <- function(page) {
-  return(rvest::html_nodes(page, ".post_message") %>%
-           rvest::html_text() %>%
-           stringr::str_remove_all("\n") %>%
-           stringr::str_remove_all("\r") %>%
-           stringr::str_remove_all("\t") %>%
-           stringr::str_replace_all("[^[:alnum:]]", " ") %>%
-           stringr::str_squish())
+  rvest::html_nodes(page, ".post_message") %>%
+    rvest::html_text() %>%
+    stringr::str_remove_all("\n") %>%
+    stringr::str_remove_all("\r") %>%
+    stringr::str_remove_all("\t") %>%
+    stringr::str_replace_all("[^[:alnum:]]", " ") %>%
+    stringr::str_squish()
+}
+
+remove_second_order <- function(quotes, second_order_quote, third_order_quote) {
+  if (length(third_order_quote) > 0) {
+    pattern_third_order <- paste0("^", third_order_quote) %>%
+      paste(., collapse = "|")
+    second_order_quote <- second_order_quote[!stringr::str_detect(second_order_quote, pattern_third_order)]
+  }
+  if (length(third_order_quote) > 0) quotes <- remove_third_order(quotes, third_order_quote)
+  temp_pattern <- paste(second_order_quote, collapse = "|")
+  temp <- stringr::str_detect(quotes, temp_pattern)
+  ind <- vector(mode = "logical", length = length(temp))
+  ind[[1]] <- FALSE
+  for (i in 2:length(temp)) {
+    if (temp[[i-1]] == TRUE & temp[[i]] == TRUE) {
+      ind[[i]] <- TRUE
+      temp[[i]] <- FALSE
+    }
+  }
+  quotes <- quotes[!ind]
+  return(quotes)
+}
+
+remove_third_order <- function(quotes, third_order_quote) {
+  temp_pattern <- paste(third_order_quote, collapse = "|")
+  temp <- stringr::str_detect(quotes, temp_pattern)
+  ind <- vector(mode = "logical", length = length(temp))
+  ind[[1]] <- FALSE
+  ind[[2]] <- FALSE
+  for (i in 3:length(temp)) {
+    if (temp[[i-2]] == TRUE & temp[[i-1]] == TRUE & temp[[i]] == TRUE) ind[[i]] <- TRUE
+  }
+  return(quotes[!ind])
 }
 
 get_quotes <- function(page) {
@@ -199,7 +232,29 @@ get_quotes <- function(page) {
     stringr::str_remove_all("\t") %>%
     stringr::str_replace_all("[^[:alnum:]]", " ") %>%
     stringr::str_squish()
-  quotes[stringr::str_detect(quotes, "^Citat")]
+  quotes <- quotes[stringr::str_detect(quotes, "^Citat")]
+  second_order_quote <- rvest::html_nodes(page, ".post-clamped-text div") %>%
+    rvest::html_text()%>%
+    stringr::str_remove_all("\n") %>%
+    stringr::str_remove_all("\r") %>%
+    stringr::str_remove_all("\t") %>%
+    stringr::str_replace_all("[^[:alnum:]]", " ") %>%
+    stringr::str_squish() %>%
+    .[stringr::str_detect(., "^Citat")]
+
+  third_order_quote <- rvest::html_nodes(page, ".post-clamped-text .post-bbcode-quote .post-bbcode-quote") %>%
+    rvest::html_text()%>%
+    stringr::str_remove_all("\n") %>%
+    stringr::str_remove_all("\r") %>%
+    stringr::str_remove_all("\t") %>%
+    stringr::str_replace_all("[^[:alnum:]]", " ") %>%
+    stringr::str_squish() %>%
+    paste("Citat", ., sep = " ") %>%
+    .[. != "Citat "]
+
+  if (length(second_order_quote) != 0) quotes <- remove_second_order(quotes, second_order_quote, third_order_quote)
+
+  return(quotes)
 }
 
 ## auxiliary functions for removing quotes
