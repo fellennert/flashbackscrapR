@@ -257,6 +257,30 @@ get_quotes <- function(page) {
   return(quotes)
 }
 
+## alternative for quote removal
+
+alternative_get_quotes <- function(page) {
+  quotes <- rvest::html_nodes(page, xpath = "//div[contains(@class, 'post-bbcode-quote')]") %>%
+    rvest::html_text() %>%
+    stringr::str_remove_all("\n") %>%
+    stringr::str_remove_all("\r") %>%
+    stringr::str_remove_all("\t") %>%
+    stringr::str_replace_all("[^[:alnum:]]", " ") %>%
+    stringr::str_squish()
+  quotes <- quotes[stringr::str_detect(quotes, "^Citat")]
+
+  for_removal <- rvest::html_nodes(page, ".post-bbcode-quote .post-bbcode-quote") %>%
+    rvest::html_text() %>%
+    stringr::str_remove_all("\n") %>%
+    stringr::str_remove_all("\r") %>%
+    stringr::str_remove_all("\t") %>%
+    stringr::str_replace_all("[^[:alnum:]]", " ") %>%
+    stringr::str_squish() %>%
+    paste("Citat", ., sep = " ")
+
+  quotes[!quotes %in% for_removal]
+}
+
 ## auxiliary functions for removing quotes
 
 # one quote, not in the beginning of posting
@@ -347,12 +371,22 @@ get_content_remove_quotes <- function(page) {
                   posting_wo_quote = value
                   )
 
-  post_with_quote <- posting %>%
+  post_for_quote <- posting %>%
     dplyr::filter(reps != 0) %>%
     dplyr::group_by(name, value) %>%
     tidyr::expand(rep_number = seq(1:reps)) %>%
-    dplyr::mutate(reps = max(rep_number)) %>%
-    dplyr::bind_cols(tibble::enframe(quotes, name = NULL, value = "quote"))
+    dplyr::mutate(reps = max(rep_number))
+
+  post_with_quote <- tryCatch(
+    expr = {
+      dplyr::bind_cols(post_for_quote, tibble::enframe(quotes, name = NULL, value = "quote"))
+    },
+    error = function(e) {
+      quotes_new <- alternative_get_quotes(page)
+      dplyr::bind_cols(post_for_quote, tibble::enframe(quotes_new, name = NULL, value = "quote"))
+    }
+  )
+
 
   quote_in_beginning <- post_with_quote %>%
     dplyr::filter(reps == 1 &
