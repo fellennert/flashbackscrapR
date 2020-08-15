@@ -57,7 +57,7 @@ scrape_thread_content <- function(suffix, export_csv = FALSE, folder_name = NULL
                                                       error = function(e) {
                                                         get_posting(.x) %>%
                                                           tibble::enframe(name = NULL, value = "posting") %>%
-                                                          dplyr::mutate(posting_wo_quote = dplyr::if_else(stringr::str_detect(posting, "Citat "),
+                                                          dplyr::mutate(posting_wo_quote = dplyr::if_else(stringr::str_detect(posting, pattern = "Citat "),
                                                                                                           paste("FLAWED CITATION COULD NOT BE REMOVED", posting),
                                                                                                           posting),
                                                                         name = 0)
@@ -70,9 +70,3 @@ scrape_thread_content <- function(suffix, export_csv = FALSE, folder_name = NULL
   }
   return(output_tbl)
 }
-
-get_posting(page) %>%
-  tibble::enframe(name = NULL, value = "posting")
-  dplyr::mutate(posting_wo_quote = dplyr::if_else(stringr::str_detect("Citat "),
-                                                    paste("FLAWED CITATION COULD NOT BE REMOVED", posting),
-                                                    posting))
