@@ -46,6 +46,8 @@ scrape_thread_content <- function(suffix, export_csv = FALSE, folder_name = NULL
     })
   }
 
+  if (rvest::html_node(pages[[1]], "h2") %>% rvest::html_text() == "Ojdå! Sidan kunde inte hittas") stop("Page not found.")
+
   output_tbl <- tibble::tibble(
     url = suffix,
     date = lubridate::ymd(purrr::map(pages, get_date_thread) %>% unlist()),
