@@ -69,7 +69,7 @@ scrape_thread_content <- function(suffix, export_csv = FALSE, folder_name = NULL
     date = lubridate::ymd(purrr::map(pages, get_date_thread) %>% unlist() %>% .[!is.na(.)]),
     time = purrr::map(pages, get_time) %>% unlist(),
     author_name = purrr::map(pages, get_author_name) %>% unlist(),
-    quoted_user = purrr::map(pages, get_quoted_user) %>% unlist()
+    quoted_user = purrr::map(pages, get_quoted_user) %>% unlist() %>% .[. != "message from moderator"]
   ) %>%
     dplyr::bind_cols(purrr::map_dfr(pages, ~{tryCatch(expr = get_content_remove_quotes(.x),
                                                       error = function(e) {

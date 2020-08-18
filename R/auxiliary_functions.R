@@ -168,6 +168,8 @@ get_quoted_user <- function(page) {
     stringr::str_replace_all("[^[:alnum:]]", " ") %>%
     stringr::str_squish()
 
+  if(length(text) == 0) return("message from moderator")
+
   cit_user <- character(length = length(text))
   for (j in 1:length(text)){
     temp <- stringr::str_split(text[j], "postat av")[[1]][2]
