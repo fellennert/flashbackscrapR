@@ -53,7 +53,7 @@ If there are sub-sub-sections, using `get_subsub()` provides you with them. Alwa
 
 Since you want to scrape singular threads, you need to acquire their links first. Choose your sub-section(s) and/or sub-sub-section(s) and throw them into `get_thread_links()`. It will return a vector containing the singular threads' suffixes. If there is only a specific period of time you want to collect data from, you can specify it using the `cut_off = "YYYY-MM-DD"` argument. The function will then only return the links to threads whose latest entry was posted **on** or **after** the cut-off date you provided. If you want to scrape an entire sub-section, you need to scrape the sub-section and its sub-sub-sections.    
 
-Finally, `scrape_thread_content()` can then be used to mine the threads' content. In practice, you will want the function to iterate over a vector of thread links (learn more about this in the example section). As all scraping functions are prone to crashing due to manifold reasons, `scrape_thread_content()` has a built-in safety net: it can automatically export your results into a CSV file. For doing so, you have to set `export_csv = TRUE` or specify a `folder_name = ""` or `file_name = ""`. Then, if only `export_csv = TRUE`, it exports a file named "scrape-YYYY-MM-DD.csv" (YYYY-MM-DD stands for the date you scraped it) into your working directory. You can either change the working directory manually using `setwd()`, or create a folder in it which is dedicated to the scrape. You can specify the folder's name in the `folder_name = ""` argument. Please note that the folder has to exist beforehand. The output file's name can be changed by specifying a name in `file_name = ""`. If you iterate over multiple threads with simply specifying a file name, your output files will be overwritten every iteration. So please be aware of that your file name needs to change every iteration (e.g., by using `paste0()` and a current number or so) in order to avoid that. Another way of dealing with failure is by using `purrr::safely()`.
+Finally, `scrape_thread_content()` can then be used to mine the threads' content. In practice, you will want the function to iterate over a vector of thread links (learn more about this in the example section). As all scraping functions are prone to crashing due to manifold reasons, `scrape_thread_content()` has a built-in safety net: it can automatically export your results into a CSV file. For doing so, you have to set `export_csv = TRUE` or specify a `folder_name = ""` or `file_name = ""`. Then, if only `export_csv = TRUE`, it exports a file named "scrape-YYYY-MM-DD.csv" (YYYY-MM-DD stands for the date you scraped it) into your working directory. You can either change the working directory manually using `setwd()`, or create a folder in it which is dedicated to the scrape. You can specify the folder's name in the `folder_name = ""` argument. Please note that the folder has to exist beforehand. The output file's name can be changed by specifying a name in `file_name = ""`. If you iterate over multiple threads with simply specifying a file name, your output files will be overwritten every iteration. So please be aware of that your file name needs to change every iteration (e.g., by using `paste0()` and a current number or so) in order to avoid that. Another way of dealing with failure is by wrapping the function with `purrr::safely()`. 
 
 ## Exemplary scrape
 
@@ -122,7 +122,9 @@ This returns a list. My goal is to get a tibble I can iterate over in the same m
 
 ```
 
-Now I have created a tibble to map over. Since I am worried that my scraping process could crash, I wrap `scrape_thread_content()` with `purrr::safely()`. This implies that in the case that `scrape_thread_content()` fails in scraping a thread, it does not break the entire process, but only prints an error in the list. Scraping can take very long, especially as flashback.org asks me to take breaks between requests. For the sake of this tutorial, I created a tibble with two threads that are both rather small (<10 postings).
+Now I have created a tibble to map over. Since I am worried that my scraping process could crash, I wrap `scrape_thread_content()` with `purrr::safely()`. This implies that a list with two entries is returned: `result` and `error`. Normally, `result` contains the resulting tibble and `error` is `NULL`. In the unfortunate case that `scrape_thread_content()` fails to scrape a thread (because it does not exist anymore or you need to have an existing account -- a functionality I have not added yet), it does not break the entire process, but only stores the error message in the `error` object and `result` becomes `NULL`. 
+
+Scraping can take very long, especially as flashback.org asks to take breaks between requests. For the sake of this tutorial, I created a tibble with two threads that are both rather small (<10 postings).
 
 ```{r message=FALSE, warning=FALSE, include=FALSE}
 test_thread_links_tbl <- tibble::tibble(
@@ -147,6 +149,9 @@ The scraping process was successful. Finally, I can now extract the tibbles from
   purrr::pluck(1) %>% 
   dplyr::bind_rows())
 ```
+
+
+> NOTE: If you just want to save the results without storing it in a list in the R session itself -- e.g., to save resources -- `purrr::pwalk()` would be the way to go. It only calls a function for its side effect -- here, for storing the .csv files in the specified folder.
 
 Furthermore, both threads have been saved into the folder I specified earlier. If I wanted to read them in from there, I would use the `vroom` and `fs` packages. This procedure works with whatever number of files are stored in the folder:
 
