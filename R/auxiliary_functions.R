@@ -352,7 +352,7 @@ remove_quotes_between_auxiliary <- function(name, value, quote) {
 
 # function that obtains postings and removes quotes
 
-get_content_remove_quotes <- function(page) {
+get_content_remove_quotes <- function(page, n_pages) {
   quotes <- get_quotes(page)
   pattern <- paste(quotes, collapse = "|")
 
@@ -365,6 +365,8 @@ get_content_remove_quotes <- function(page) {
                                                      posting = value,
                                                      posting_wo_quote = value)
                                   )
+
+  if (n_pages == 1 && posting$reps[[1]] != 0) posting$reps[[1]] <- 0
 
   no_quote <- posting %>%
     dplyr::filter(reps == 0) %>%
