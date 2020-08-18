@@ -46,11 +46,27 @@ scrape_thread_content <- function(suffix, export_csv = FALSE, folder_name = NULL
     })
   }
 
-  if (rvest::html_node(pages[[1]], "h2") %>% rvest::html_text() == "Ojdå! Sidan kunde inte hittas") stop("Page not found.")
+  if (stringr::str_detect(rvest::html_nodes(pages[[1]], ".text-warning") %>%
+                            rvest::html_text(),
+                          "Du är inte inloggad eller också har du inte behörighet att se den här sidan.")
+      &&
+      length(rvest::html_nodes(pages[[1]], ".text-warning") %>%
+                            rvest::html_text()) != 0) {
+    stop("Login required.")
+  }
+  if (stringr::str_detect(rvest::html_node(pages[[1]], "h2") %>%
+                            rvest::html_text(),
+                          "Ojdå! Sidan kunde inte hittas")
+      &&
+      length(rvest::html_node(pages[[1]], "h2") %>%
+                            rvest::html_text()) != 0) {
+    stop("Page not found.")
+  }
+
 
   output_tbl <- tibble::tibble(
     url = suffix,
-    date = lubridate::ymd(purrr::map(pages, get_date_thread) %>% unlist()),
+    date = lubridate::ymd(purrr::map(pages, get_date_thread) %>% unlist() %>% .[!is.na(.)]),
     time = purrr::map(pages, get_time) %>% unlist(),
     author_name = purrr::map(pages, get_author_name) %>% unlist(),
     quoted_user = purrr::map(pages, get_quoted_user) %>% unlist()
