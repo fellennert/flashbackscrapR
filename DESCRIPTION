@@ -1,7 +1,7 @@
 Package: flashbackscrapR
 Type: Package
 Title: scraping flashback.org
-Version: 0.1.0
+Version: 1.0
 Authors@R: person("Felix", "Lennert", email = "felix.lennert@icloud.com",
                   role = c("aut", "cre"))
 Description: This package makes it easy to scrape the flashback.org forum.
