@@ -150,16 +150,15 @@ remove_quotes <- function(posting, pattern) {
 # final function
 
 get_content_remove_quotes <- function(page) {
+  posting <- get_posting(page)
+  if (length(posting) == 0) return(tibble::tibble(posting = "0", posting_wo_quote = "0") %>% dplyr::slice(0))
+
   pattern <- get_quotes(page) %>%
   .[stringr::str_detect(., "^Citat")] %>%
   stringr::str_c(., collapse = "|")
 
-  posting <- get_posting(page)
-
   remove_quotes(posting, pattern)
 }
-
-
 
 ### 4th part: save results
 
