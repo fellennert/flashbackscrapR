@@ -72,6 +72,10 @@ get_author_name <- function(page) {
     dplyr::pull(author)
 }
 
+get_author_link <- function(page) {
+  rvest::html_nodes(page, ".post-user-username") %>%
+    rvest::html_attr("href")
+}
 
 get_quoted_user <- function(page) {
   text <- rvest::html_nodes(page, ".post_message") %>%
