@@ -127,10 +127,10 @@ get_quotes <- function(page) {
 
 remove_quotes <- function(posting, pattern) {
   for_extract <- stringr::str_locate_all(posting, pattern)
-  for_removal <- map2(posting, for_extract, ~{
+  for_removal <- purrr::map2(posting, for_extract, ~{
     stringr::str_sub(.x, start = .y[,1], end = .y[, 2])
     })
-  remove_it <- map2(posting, for_removal, ~{
+  remove_it <- purrr::map2(posting, for_removal, ~{
     if (length(.y) == 0) {
       return(.x)
     } else {
@@ -163,7 +163,6 @@ get_content_remove_quotes <- function(page) {
 ### 4th part: save results
 
 save_it <- function(folder_name, file_name, output_tbl) {
-  date_chr <- as.character(lubridate::today())
 
   if (is.null(file_name) == TRUE) {
     file_name <- paste0("scrape-", as.character(lubridate::today()))
