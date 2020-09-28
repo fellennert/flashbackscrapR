@@ -45,6 +45,6 @@ A character vector containing the links.
 Scrapes a certain thread
 }
 \examples{
-scrape_thread_content(suffix = "/t3145103", export_csv = TRUE, folder_name = "results", file_name = "test", delay = TRUE)
+scrape_thread_content(suffix = "/t3145103", export_csv = TRUE, folder_name = "sandbox/results", file_name = "test", delay = TRUE)
 
 }

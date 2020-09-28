@@ -7,7 +7,6 @@
 get_thread_links(
   suffix,
   cut_off = "2000-01-01",
-  title = TRUE,
   delay = TRUE,
   pure_suffix = FALSE
 )
@@ -21,12 +20,12 @@ to start with \code{/}.}
 post in the thread should had been posted on. Has to be in the format
 \code{YYYY-MM-DD}. Defaults to \code{"2000-01-01"}.}
 
-\item{title}{A logical vector. If \code{TRUE}, the thread title is returned
-as well.}
-
 \item{delay}{flashback.org's robots.txt-file asks for putting a five
 second delay between each iteration. You can deliberately ignore this by
 setting \code{delay = FALSE}. Note that THIS IS NOT RECOMMENDED!}
+
+\item{title}{A logical vector. If \code{TRUE}, the thread title is returned
+as well.}
 }
 \value{
 A character vector containing the links. If \code{title = TRUE}, a
