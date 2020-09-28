@@ -68,10 +68,12 @@ scrape_thread_content <- function(suffix, export_csv = FALSE, folder_name = NULL
     date = lubridate::ymd(purrr::map(pages, get_date_thread) %>% unlist() %>% .[!is.na(.)]),
     time = purrr::map(pages, get_time) %>% unlist(),
     author_name = purrr::map(pages, get_author_name) %>% unlist(),
-    author_link = purrr::map(pages, get_author_link) %>% unlist(),
     quoted_user = purrr::map(pages, get_quoted_user) %>% unlist() %>% .[. != "message from moderator"]
   ) %>%
-    dplyr::bind_cols(purrr::map_dfr(pages, get_content_remove_quotes))
+    dplyr::bind_cols(purrr::map_dfr(pages, get_content_remove_quotes)) %>%
+    add_author_name(., pages) %>%
+    dplyr::mutate(posting_wo_quote = dplyr::case_when(posting_wo_quote == "" ~ posting,
+                                                      TRUE ~ posting_wo_quote))
 
   if (export_csv == TRUE) save_it(folder_name, file_name, output_tbl)
   if (export_csv == FALSE & is.null(folder_name) == FALSE | is.null(file_name) == FALSE) {

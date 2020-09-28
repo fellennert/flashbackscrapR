@@ -96,6 +96,29 @@ get_quoted_user <- function(page) {
   return(cit_user)
 }
 
+add_author_name <- function(output_tbl, pages){
+  output_tbl %>%
+    dplyr::left_join(tibble::tibble(
+                       author_name = output_tbl %>%
+                         dplyr::filter(!is.na(.data[["author_name"]])) %>%
+                         dplyr::pull(.data[["author_name"]]),
+                       author_link = purrr::map(pages, get_author_link) %>%
+                                                  unlist()
+                       ),
+                       by = "author_name"
+    ) %>%
+    dplyr::select(.data[["url"]]:.data[["author_name"]],
+                  .data[["author_link"]],
+                  .data[["quoted_user"]],
+                  .data[["posting"]]:.data[["posting_wo_quote"]]
+                  ) %>%
+    dplyr::distinct(.data[["author_name"]],
+                    .data[["author_link"]],
+                    .data[["time"]],
+                    .data[["posting"]],
+                    .data[["posting_wo_quote"]],
+                    .keep_all = TRUE)
+}
 
 ### 3rd part: acquire postings (with and without quotes)
 
