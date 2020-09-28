@@ -1,6 +1,6 @@
 #' Scrape profiles
 #'
-#' Scrapes a certain thread
+#' Scrapes a certain user profile
 #'
 #' @param suffix A character string containing a user profile's suffix.
 #'
