@@ -16,8 +16,8 @@ knitr::opts_chunk$set(
 )
 ```
 
-```{r setup}
-knitr::opts_chunk$set(include = FALSE)
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(include = TRUE)
 library(flashbackscrapR)
 ```
 
@@ -25,7 +25,7 @@ library(flashbackscrapR)
 
 This vignette's goal is to enable you to use `flashbackscrapR` in a meaningful way. In order to achieve this, its functionality and the rationale behind it are to be described. First, a brief overview of the structure of <www.flashback.org> is given. Second, the functions of `flashbackscrapR` are described. Third, examples are provided which show how to use it. 
 
-## The structure of www.flashback.org
+# The structure of www.flashback.org
 
 Figure 1 depicts the simplified structure of www.flashback.org. 
 
@@ -37,13 +37,13 @@ Figure 1 depicts the simplified structure of www.flashback.org.
 * **threads** are contained within either **sub-sections** or **sub-sub-sections**. They are as specific as they can get and contain the users' postings. They usually are what you want to mine.  
 * The link structure looks like this: www.flashback.org is the main URL. It leads to the main page. To go to a certain section or thread, a suffix needs to be added. The suffix and the main URL have to be separated by */*. Suffixes that lead to a section start with an *f* and end with a number (e.g., www.flashback.org/f4). Suffixes that relate to singular threads start with a *t* (e.g., www.flashback.org/t2343244). If a section or thread contains multiple pages, the page number is added to the link, separated by a *p* (e.g., the second page of the aforementioned thread: www.flashback.org/t2343244p2). The suffixes that are imputed into the scraping function always have to start with the slash "/".
 
-## `flashbackscrapR`'s functionality
+# `flashbackscrapR`'s functionality
 
-### The logic behind it
+## The logic behind it
 
 Scraping flashback.org usually looks like this: You first choose the section you want to scrape. For instance, if you want drug-related postings, you should choose the main section *Droger*. Then, you look at the section's sub-sections. The question that you should ask yourself now is whether you can make your goal of interest more specific. If so, you can select certain sub-sections that contain the content you aim to mine. Sometimes, sub-sections also contain sub-sub-sections which are even more specific. Again, ask yourself whether you want them all or whether it is likely that all you want to mine is hidden within one sub-sub-section. The penultimate step is to get the thread links -- they are the entity that actually contains the content you are after. Finally, you can pass them to the actual scraping function and let the machine do its work. 
 
-### The specific functions
+## The specific functions
 
 The function `get_main_sections()` provides you with a tibble containing the main sections' names and suffixes. Here, you do not have to specify anything, just call the function.  
 
@@ -55,14 +55,15 @@ Since you want to scrape singular threads, you need to acquire their links first
 
 Finally, `scrape_thread_content()` can then be used to mine the threads' content. In practice, you will want the function to iterate over a vector of thread links (learn more about this in the example section). As all scraping functions are prone to crashing due to manifold reasons, `scrape_thread_content()` has a built-in safety net: it can automatically export your results into a CSV file. For doing so, you have to set `export_csv = TRUE` or specify a `folder_name = ""` or `file_name = ""`. Then, if only `export_csv = TRUE`, it exports a file named "scrape-YYYY-MM-DD.csv" (YYYY-MM-DD stands for the date you scraped it) into your working directory. You can either change the working directory manually using `setwd()`, or create a folder in it which is dedicated to the scrape. You can specify the folder's name in the `folder_name = ""` argument. Please note that the folder has to exist beforehand. The output file's name can be changed by specifying a name in `file_name = ""`. If you iterate over multiple threads with simply specifying a file name, your output files will be overwritten every iteration. So please be aware of that your file name needs to change every iteration (e.g., by using `paste0()` and a current number or so) in order to avoid that. Another way of dealing with failure is by wrapping the function with `purrr::safely()`. 
 
-## Exemplary scrape
+# Exemplary scrape
+
+## Acquiring relevant threads
 
 In the following, I will guide you through the scraping process of flashback.org's "Droger" section. For iterating over vectors, I will use `purrr::map()`. Please familiarize yourself with it beforehand, for instance by reading [this](https://purrr.tidyverse.org/reference/map.html). For basic data wrangling, I will mainly use functions from `tidyverse` packages in general. Please familiarize yourself with it beforehand, for instance by reading [this](https://r4ds.had.co.nz/index.html). This could also be entirely accomplished using base R, loops, and the apply() family, but I refuse to write a tutorial on this.
 
 ```{r}
 library(flashbackscrapR)
 ```
-
 
 `get_main_sections()` returns a tibble with the main sections' names and suffixes. Wrapping an assigning function in `()` prints its output to the console.
 
@@ -98,7 +99,9 @@ Now I will check whether there are any sub-sub-sections:
 (cannabis_sub_sub_sections <- get_subsub(cannabis_suffix))
 ```
 
-And, indeed, there are three in total. However, I have a vital interest in Cannabis and want to scrape everything Cannabis-related flashback.org has to offer. First, I build a vector with the suffixes of the Cannabis sub-sections and its sub-sub-sections. Second, since I want to only get the postings from the last two days, I create a tibble with two columns: the suffixes and the cut-off date. Third, I iterate over the tibble, applying the `get_thread_links()` function to every line. 
+And, indeed, there are three in total. I have a vital interest in Cannabis and want to scrape everything Cannabis-related flashback.org has to offer. 
+
+First, I build a vector with the suffixes of the Cannabis sub-sections and its sub-sub-sections. Second, since I want to only get the postings from the last two days, I create a tibble with two columns: the suffixes and the cut-off date. Third, I iterate over the tibble (using `purrr::pmap()`), applying the `get_thread_links()` function to every line with the tibble's columns as inputs.
 
 ```{r}
 (cannabis_suffixes <- c(cannabis_suffix, purrr::pluck(cannabis_sub_sub_sections, 2)))
@@ -109,7 +112,9 @@ And, indeed, there are three in total. However, I have a vital interest in Canna
 (thread_links <- purrr::pmap(cannabis_suffixes_tbl, get_thread_links))
 ```
 
-This returns a list. My goal is to get a tibble I can iterate over in the same manner, applying `scrape_thread_content()` to every row. This tibble has to contain several columns: One column containing the thread link. One column specifying the folder I want to store the resulting CSV file in. One column with a name that is different for every file (I achieve this by using a current number and `paste0()`). Since I provide a folder and file name, I do not have to explicitly tell the function that I want it to export the results. 
+## Scrape the threads' content
+
+This returns a list. My goal is to get a tibble I can iterate over in the same manner, applying `scrape_thread_content()` to every row. Due to the functions' arguments, the tibble has to contain several columns: One column containing the thread link. One column specifying the folder I want to store the resulting CSV file in. One column with a name that is different for every file (I achieve this by using a current number and `paste0()`). Since I provide a folder and file name, I do not have to explicitly tell the function that I want it to export the results. 
 
 ```{r}
 (thread_links_tbl <- tibble::tibble(
@@ -122,9 +127,9 @@ This returns a list. My goal is to get a tibble I can iterate over in the same m
 
 ```
 
-Now I have created a tibble to map over. Since I am worried that my scraping process could crash, I wrap `scrape_thread_content()` with `purrr::safely()`. This implies that a list with two entries is returned: `result` and `error`. Normally, `result` contains the resulting tibble and `error` is `NULL`. In the unfortunate case that `scrape_thread_content()` fails to scrape a thread (because it does not exist anymore or you need to have an existing account -- a functionality I have not added yet), it does not break the entire process, but only stores the error message in the `error` object and `result` becomes `NULL`. 
+Now I have created a tibble to map over. Since I am worried that my scraping process could crash, I wrap `scrape_thread_content()` in `purrr::safely()`. This implies that a list with two entries is returned: `result` and `error`. Normally, `result` contains the resulting tibble and `error` is `NULL`. In the unfortunate case that `scrape_thread_content()` fails to scrape a thread (because it does not exist anymore or you need to have an existing account -- a functionality I have not added yet), it does not break the entire process, but only stores the error message in the `error` object and `result` becomes `NULL`. 
 
-Scraping can take very long, especially as flashback.org asks to take breaks between requests. For the sake of this tutorial, I created a tibble with two threads that are both rather small (<10 postings).
+Scraping can take very long, especially as flashback.org asks to take breaks between requests. For the sake of this tutorial, I created a tibble with two threads that are both rather small (around 10 postings).
 
 ```{r message=FALSE, warning=FALSE, include=FALSE}
 test_thread_links_tbl <- tibble::tibble(
@@ -141,7 +146,7 @@ scrape_results <- purrr::pmap(test_thread_links_tbl, purrr::safely(scrape_thread
 str(scrape_results)
 ```
 
-The scraping process was successful. Finally, I can now extract the tibbles from the list and bin them together to one tibble:
+The scraping process was successful. Finally, I can now extract the tibbles from the list and bind them together to one tibble:
 
 ```{r}
 (results_tbl <- scrape_results %>% 
@@ -153,17 +158,44 @@ The scraping process was successful. Finally, I can now extract the tibbles from
 
 > NOTE: If you just want to save the results without storing it in a list in the R session itself -- e.g., to save resources -- `purrr::pwalk()` would be the way to go. It only calls a function for its side effect -- here, for storing the .csv files in the specified folder.
 
-Furthermore, both threads have been saved into the folder I specified earlier. If I wanted to read them in from there, I would use the `vroom` and `fs` packages. This procedure works with whatever number of files are stored in the folder:
+## Dealing with errors
 
-```{r message=FALSE}
-(files <- fs::dir_ls("test_scrape/", glob = "*.csv"))
-(data <- purrr::map(files, vroom::vroom) %>% 
+Sometimes there are some unexpected errors. The most common ones I have stumbled across are errors on the server side (HTTP error 500), the problem that threads do no exist anymore (especially common if you want to scrape really "old" data), and that you need to be a member of flashback and log in. I will probably fix the latter one in the future (if I come across it more often), but there is nothing I can do about the former two. If you want to look at the errors from your scrape, you can, again, use `purrr::transpose()` and `purrr::pluck()`. It would look like this:
+
+```{r}
+(errors <- scrape_results %>% 
   purrr::transpose() %>% 
-  purrr::map(unlist) %>% 
-  dplyr::bind_cols() %>% 
-  dplyr::mutate(date = lubridate::as_date(date),
-                hour = lubridate::hour(lubridate::as_datetime(time)),
-                minute = lubridate::minute(lubridate::as_datetime(time))) %>% 
-  dplyr::select(url, date, hour, minute, author_name, posting, posting_wo_quote, quoted_user))
+  purrr::pluck(2))
 ```
 
+If you then want to extract the urls that have failed, use the following code:
+
+```{r eval=FALSE, message=FALSE, warning=FALSE, include=TRUE}
+is_error <- purrr::map_lgl(errors, is.null)
+flawed_links <- test_thread_links_tbl$suffix[!is_error]
+```
+
+Since there haven't been any errors, `flawed_links` is `NULL`.
+
+## After the scrape
+
+Furthermore, both threads have been saved into the folder I specified earlier. If I wanted to read them in from there and bind them together in one big tibble, I would use the `purrr`, `readr`, and `fs` packages. The procedure works with whatever number of files are stored in the folder:
+
+```{r eval=FALSE, message=FALSE, warning=FALSE, include=TRUE}
+library(readr)
+data <- fs::dir_ls(path = "test_scrape", glob = "*.csv") %>% 
+  purrr::map_dfr(read_csv, col_types = cols(
+    url = col_character(),
+    date = col_date(format = ""),
+    time = col_time(format = ""),
+    author_name = col_character(),
+    author_url = col_character(),
+    quoted_user = col_character(),
+    posting = col_character(),
+    posting_wo_quote = col_character()
+  ))
+```
+
+## Getting some meta-data
+
+Now I want to get some data on the people who are discussing drug-related things here. Flashback is not really generous regarding the information I can obtain on the users. Scraping the threads has provided me with the profile urls of the individual users. I can feed them into the 
