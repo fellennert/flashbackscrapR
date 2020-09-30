@@ -120,6 +120,12 @@ add_author_name <- function(output_tbl, pages){
                     .keep_all = TRUE)
 }
 
+clean_quoted_user <- function(output_tbl){
+  result <- stringr::str_locate(output_tbl$quoted_user, pattern = paste(output_tbl$author_name, collapse = "|"))
+  output_tbl$quoted_user <- stringr::str_sub(output_tbl$quoted_user, start = result[, 1], end = result[, 2])
+  return(output_tbl)
+}
+
 ### 3rd part: acquire postings (with and without quotes)
 
 ## functions for acquiring postings and quotes
