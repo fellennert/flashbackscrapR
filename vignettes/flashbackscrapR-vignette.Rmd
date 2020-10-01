@@ -179,7 +179,7 @@ Since there haven't been any errors, `flawed_links` is `NULL`.
 
 ## After the scrape
 
-Furthermore, both threads have been saved into the folder I specified earlier. If I wanted to read them in from there and bind them together in one big tibble, I would use the `purrr`, `readr`, and `fs` packages. The procedure works with whatever number of files are stored in the folder:
+Furthermore, both threads have been saved into the folder I specified earlier. If I wanted to read them in from there and bind them together in one big tibble, I would use the `purrr`, `readr`, and `fs` packages. The procedure works regardless the number of files stored in the folder:
 
 ```{r eval=FALSE, message=FALSE, warning=FALSE, include=TRUE}
 library(readr)
@@ -198,4 +198,11 @@ data <- fs::dir_ls(path = "test_scrape", glob = "*.csv") %>%
 
 ## Getting some meta-data
 
-Now I want to get some data on the people who are discussing drug-related things here. Flashback is not really generous regarding the information I can obtain on the users. Scraping the threads has provided me with the profile urls of the individual users. I can feed them into the 
+Now I want to get some data on the people who are discussing drug-related things here. Flashback is not really generous regarding the information I can obtain on the users. Scraping the threads has provided me with the profile urls of the individual users. I can feed them into `scrape_user_profile()` to get some information on the user's current status, how many posts they have made, and when they signed up.
+
+```{r}
+(user_profiles <- purrr::map_dfr(results_tbl$author_link %>% unique(), scrape_user_profile))
+
+
+```
+
