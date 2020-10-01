@@ -120,10 +120,20 @@ add_author_name <- function(output_tbl, pages){
                     .keep_all = TRUE)
 }
 
-clean_quoted_user <- function(output_tbl){
-  result <- stringr::str_locate(output_tbl$quoted_user, pattern = paste(output_tbl$author_name, collapse = "|"))
-  output_tbl$quoted_user <- stringr::str_sub(output_tbl$quoted_user, start = result[, 1], end = result[, 2])
-  return(output_tbl)
+clean_quoted_user <- function(posting, author_name){
+  author_tbl <- tibble(
+    true_name = author_name,
+    cleaned_name = author_name %>%
+    stringr::str_replace_all("[^[:alnum:]]", " ") %>%
+    str_squish()
+  ) %>%
+    distinct(cleaned_name, .keep_all = TRUE) %>%
+    filter(str_detect(cleaned_name, "[:alnum:]"))
+  result <- stringr::str_locate(posting, pattern = paste(author_tbl$cleaned_name, collapse = "|"))
+  temp <- stringr::str_sub(posting, start = result[, 1], end = result[, 2]) %>%
+    enframe(name = NULL, value = "cleaned_name")
+  left_join(temp, author_tbl, by = "cleaned_name") %>%
+    pull("true_name")
 }
 
 ### 3rd part: acquire postings (with and without quotes)

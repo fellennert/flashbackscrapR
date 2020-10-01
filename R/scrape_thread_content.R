@@ -81,7 +81,9 @@ scrape_thread_content <- function(suffix, export_csv = FALSE, folder_name = NULL
     add_author_name(., pages) %>%
     dplyr::mutate(posting_wo_quote = dplyr::case_when(posting_wo_quote == "" ~ posting,
                                                       TRUE ~ posting_wo_quote)) %>%
-    clean_quoted_user()
+    mutate(quoted_user = clean_quoted_user(posting, author_name),
+         quoted_user = case_when(posting == posting_wo_quote ~ NA_character_,
+                                 TRUE ~ quoted_user))
 
   if (export_csv == TRUE) save_it(folder_name, file_name, output_tbl)
   if (export_csv == FALSE & is.null(folder_name) == FALSE | is.null(file_name) == FALSE) {
