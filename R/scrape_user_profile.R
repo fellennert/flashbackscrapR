@@ -4,7 +4,8 @@
 #'
 #' @param suffix A character string containing a user profile's suffix.
 #'
-#' @return A tibble containing the user name, the date a user joined, their status, and the number of postings.
+#' @return A tibble containing the user name, , the URL suffix, the date a user
+#' joined, their status, and the number of postings.
 #'
 #' @examples
 #' scrape_user_profile(suffix = "/u1000001")
