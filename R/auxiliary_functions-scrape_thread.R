@@ -125,7 +125,8 @@ clean_quoted_user <- function(posting, author_name){
     true_name = author_name,
     cleaned_name = author_name %>%
     stringr::str_replace_all("[^[:alnum:]]", " ") %>%
-    str_squish()
+    stringr::str_squish() %>%
+    stringr::str_to_lower()
   ) %>%
     distinct(cleaned_name, .keep_all = TRUE) %>%
     filter(str_detect(cleaned_name, "[:alnum:]"))
