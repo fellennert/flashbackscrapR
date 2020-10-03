@@ -15,6 +15,7 @@ scrape_user_profile <- function(suffix) {
 
   tibble::tibble(
     author_name = rvest::html_nodes(content, "#site-left .panel-title") %>% rvest::html_text(),
+    url = suffix,
     status = rvest::html_nodes(content, "#site-left .col-sm-6 span") %>% rvest::html_text(),
     joining_date = rvest::html_nodes(content, "#site-left strong") %>%
       rvest::html_text() %>%
