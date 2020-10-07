@@ -39,7 +39,14 @@ You can deliberately ignore this by setting \code{delay = FALSE}. Note that
 THIS IS NOT RECOMMENDED!}
 }
 \value{
-A character vector containing the links.
+A tibble with the following columns: \code{url} contains the thread's
+URL suffix, \code{date} the date the posting was made on, \code{time} the
+time the posting was made at, \code{author_name} the respective author's user
+name, \code{author_url} the link to their profile (can be scraped using
+\code{scrape_user_profile()}), \code{quoted_user} the user name of the user
+that is quoted in a posting (\code{NA} if the posting does not contain a
+quote), \code{posting} the posting *as is*, i.e., with potential quotes,
+\code{posting_wo_quote} the posting with all quotes removed.
 }
 \description{
 Scrapes a certain thread
