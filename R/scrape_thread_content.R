@@ -61,6 +61,13 @@ scrape_thread_content <- function(suffix, export_csv = FALSE, folder_name = NULL
                             rvest::html_text()) != 0) {
     stop("Login required.")
   }
+
+  if (stringr::str_detect(rvest::html_node(pages[[1]], ".panel-title") %>%
+                            rvest::html_text(),
+                          "Ojdå! Sidan kunde inte hittas")) {
+    stop("Page not found.")
+  }
+
   if (stringr::str_detect(rvest::html_node(pages[[1]], "h2") %>%
                             rvest::html_text(),
                           "Ojdå! Sidan kunde inte hittas")
