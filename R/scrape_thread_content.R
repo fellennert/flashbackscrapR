@@ -48,9 +48,7 @@ scrape_thread_content <- function(suffix, export_csv = FALSE, folder_name = NULL
   }
 
   if (delay == FALSE) {
-    pages <- purrr::map(url_vec, ~{
-      xml2::read_html(.x)
-    })
+    pages <- purrr::map(url_vec, insist_scrape_page)
   }
 
   if (stringr::str_detect(rvest::html_nodes(pages[[1]], ".text-warning") %>%

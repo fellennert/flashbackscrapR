@@ -29,7 +29,9 @@ generate_links <- function(suffix, n_pages) {
   return(links)
 }
 
-
+insist_scrape_page <- function(x) {
+  purrr::insistently(xml2::read_html, purrr::rate_backoff(pause_base = 5, pause_cap = 20, max_times = 5, jitter = TRUE)) (x)
+}
 ### 2nd part: acquire meta data
 
 get_date_thread <- function(page) {
