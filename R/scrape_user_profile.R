@@ -12,7 +12,7 @@
 #'
 #' @export
 scrape_user_profile <- function(suffix) {
-  content <- xml2::read_html(paste0("https://flashback.org", suffix))
+  content <- insist_scrape_page(paste0("https://flashback.org", suffix))
 
   tibble::tibble(
     author_name = rvest::html_nodes(content, "#site-left .panel-title") %>% rvest::html_text(),
