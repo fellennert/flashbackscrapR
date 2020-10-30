@@ -7,13 +7,14 @@
 #' @param folder_name A character vector with a folder name the scraped files
 #' are supposed to be stored in
 #'
-#' @return A tibble with two columns: the sub(sub)section's suffix and a folder name based on the given folder name and the sub(sub)section's name
+#' @return A tibble with two columns: the sub(sub)section's suffix and a folder
+#' name based on the given folder name and the sub(sub)section's name
 #'
 #' @examples
-#' get_full_section("/f102", folder_name = NULL)
+#' get_full_section_subs(main_section_suffix = "/f102", folder_name = NULL)
 #'
 #' @export
-get_full_section <- function(main_section_suffix, folder_name = NULL) {
+get_full_section_subs <- function(main_section_suffix, folder_name = NULL) {
   subs <- get_sub(main_section_suffix) %>%
     dplyr::mutate(sub = name %>%
                     stringr::str_to_lower() %>%
