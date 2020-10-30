@@ -5,12 +5,13 @@ get_n_pages_links <- function(section) {
   page <- xml2::read_html(link)
   n_pages <- rvest::html_nodes(page, xpath = "//div[contains(@class, 'row row-forum-toolbar')]") %>%
     rvest::html_text()
-  n_pages <- n_pages[2]
-  n_pages <- stringr::str_split(n_pages, "av")
-  n_pages <- n_pages[[1]]
-  n_pages <- n_pages[2]
-  n_pages <- as.numeric(stringr::str_sub(n_pages, 1, 8))
-  return(n_pages)
+  if (length(n_pages) > 1) n_pages <- n_pages[2]
+  n_pages %>%
+    stringr::str_split("av") %>%
+    purrr::pluck(1) %>%
+    purrr::pluck(2) %>%
+    stringr::str_sub(1, 10) %>%
+    as.numeric()
 }
 
 
