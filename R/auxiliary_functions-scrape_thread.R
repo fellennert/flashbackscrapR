@@ -224,5 +224,5 @@ save_it <- function(folder_name, file_name, output_tbl) {
   }
   fs::dir_create(folder_name)
   readr::write_csv(x = output_tbl,
-                   file = fs::path(folder_name, file_name, ext = "csv"))
+                   file = paste0(folder_name, "/", file_name, ".csv"))
 }
