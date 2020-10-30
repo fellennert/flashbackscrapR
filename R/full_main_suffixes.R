@@ -47,7 +47,9 @@ get_full_section_subs <- function(main_section_suffix, folder_name = NULL) {
 
   output <- subs %>% dplyr::left_join(subsubs, by = "indicator") %>%
     dplyr::mutate(path = dplyr::case_when(is.na(subsub) ~ fs::path(sub),
-                                          TRUE ~ fs::path(sub, subsub))) %>%
+                                          TRUE ~ fs::path(sub, subsub)),
+                  suffix = dplyr::case_when(is.na(subsub_suffix) ~ suffix,
+                                            TRUE ~ subsub_suffix)) %>%
     dplyr::select(suffix, path)
 
   if (!is.null(folder_name)) return(output %>% dplyr::mutate(path = fs::path(folder_name, path)))
