@@ -211,7 +211,11 @@ get_content_remove_quotes <- function(page) {
 save_it <- function(folder_name, file_name, output_tbl) {
 
   if (is.null(file_name) == TRUE) {
-    file_name <- paste0("scrape-", as.character(lubridate::today()))
+    file_name <- paste0("scrape-",
+                        as.character(lubridate::today()),
+                        as.character(sample(x = 1000000, size = 1)))
   }
-  readr::write_csv(output_tbl, file.path(folder_name, paste0(file_name, ".csv")))
+  fs::dir_create(folder_name)
+  readr::write_csv(x = output_tbl,
+                   file = fs::path(folder_name, file_name, ext = "csv"))
 }
