@@ -94,5 +94,5 @@ scrape_thread_content <- function(suffix, export_csv = FALSE, folder_name = NULL
   if (export_csv == FALSE & is.null(folder_name) == FALSE | is.null(file_name) == FALSE) {
     save_it(folder_name, file_name, output_tbl)
   }
-  return(output_tbl)
+  output_tbl
 }
