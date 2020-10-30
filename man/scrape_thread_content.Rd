@@ -52,6 +52,6 @@ quote), \code{posting} the posting *as is*, i.e., with potential quotes,
 Scrapes a certain thread
 }
 \examples{
-scrape_thread_content(suffix = "/t3145103", export_csv = TRUE, folder_name = "sandbox/results", file_name = "test", delay = TRUE)
+scrape_thread_content(suffix = "/t3145103", export_csv = TRUE, folder_name = "sandbox/results", file_name = "test", delay = FALSE)
 
 }
