@@ -45,22 +45,32 @@ get_thread_links <- function(suffix, cut_off = "2000-01-01", delay = TRUE, pure_
       Sys.sleep(5)
     }
   }
-  if (pure_suffix == TRUE) return(thread_links %>% purrr::compact() %>% purrr::reduce(c))
 
   links <- thread_links %>% purrr::compact() %>% purrr::reduce(c)
   date <- thread_dates %>% purrr::compact() %>% purrr::reduce(c)
+  titles <- thread_titles %>% purrr::compact() %>% purrr::reduce(c)
 
   if (length(links) != length(date)) {
     length(links) <- max(c(length(links), length(date)))
     length(date) <- max(c(length(links), length(date)))
   }
 
-  tibble::tibble(
-      links = links,
-      date = date
+  if (pure_suffix == TRUE) {
+    return(
+      tibble::tibble(
+        links = links,
+        date = date
       ) %>%
       dplyr::filter(date >= lubridate::ymd(cut_off)) %>%
-      dplyr::pull(links)
+      dplyr::pull(links))
+  }
+
+  tibble::tibble(
+        links = links,
+        date = date,
+        title = titles
+      ) %>%
+    dplyr::filter(date >= lubridate::ymd(cut_off))
 
 }
 
