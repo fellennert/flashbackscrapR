@@ -99,15 +99,22 @@ get_quoted_user <- function(page) {
 }
 
 add_author_name <- function(output_tbl, pages){
+
   output_tbl %>%
     dplyr::left_join(tibble::tibble(
                        author_name = output_tbl %>%
                          dplyr::filter(!is.na(.data[["author_name"]])) %>%
                          dplyr::pull(.data[["author_name"]]),
+                       date = output_tbl %>%
+                         dplyr::filter(!is.na(.data[["author_name"]])) %>%
+                         dplyr::pull(.data[["date"]]),
+                       time = output_tbl %>%
+                         dplyr::filter(!is.na(.data[["author_name"]])) %>%
+                         dplyr::pull(.data[["time"]]),
                        author_link = purrr::map(pages, get_author_link) %>%
                                                   unlist()
                        ),
-                       by = "author_name"
+                       by = c("author_name", "date", "time")
     ) %>%
     dplyr::select(.data[["url"]]:.data[["author_name"]],
                   .data[["author_link"]],
