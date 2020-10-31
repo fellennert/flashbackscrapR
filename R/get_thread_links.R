@@ -34,7 +34,7 @@ get_thread_links <- function(suffix, cut_off = "2000-01-01", delay = TRUE, pure_
 
   while((date_ind >= lubridate::ymd(cut_off)) && (i < length(links))) {
     i <- i + 1
-    page <- xml2::read_html(links[[i]])
+    page <- insist_scrape_page(links[[i]])
     thread_dates[[i]] <- get_date_links(page)
     date_ind <- tail(thread_dates[[i]], 1)
     thread_links[[i]] <- get_links(page)
@@ -73,7 +73,3 @@ get_thread_links <- function(suffix, cut_off = "2000-01-01", delay = TRUE, pure_
     dplyr::filter(date >= lubridate::ymd(cut_off))
 
 }
-
-
-
-
