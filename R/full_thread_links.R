@@ -35,7 +35,8 @@ get_full_thread_links <- function(suffix, folder_name, cut_off = "2000-01-01", d
     tibble::tibble(
       sub_suffix = suffix,
       folder_name = folder_name,
-      thread_links = get_thread_links(suffix = suffix, cut_off = cut_off, pure_suffix = TRUE)
+      thread_links = tryCatch(get_thread_links(suffix = suffix, cut_off = cut_off, pure_suffix = TRUE),
+                              error = function(e) NA_character_)
     )
   }) %>%
     dplyr::bind_rows() %>%

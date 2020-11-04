@@ -88,7 +88,11 @@ scrape_thread_content <- function(suffix, export_csv = FALSE, folder_name = NULL
                                                       TRUE ~ posting_wo_quote)) %>%
     dplyr::mutate(quoted_user = clean_quoted_user(posting, author_name),
          quoted_user = dplyr::case_when(posting == posting_wo_quote ~ NA_character_,
-                                        TRUE ~ quoted_user))
+                                        TRUE ~ quoted_user),
+         author_name = dplyr::case_when(!stringr::str_detect(author_name, "[:alnum:]") ~ NA_character_,
+                                        TRUE ~ author_name),
+         author_link = dplyr::case_when(is.na(author_name) == TRUE ~ NA_character_,
+                                        TRUE ~ author_link))
 
   if (export_csv == TRUE) save_it(folder_name, file_name, output_tbl)
   if (export_csv == FALSE & is.null(folder_name) == FALSE | is.null(file_name) == FALSE) {
