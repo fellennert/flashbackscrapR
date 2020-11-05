@@ -1,0 +1,26 @@
+---
+title: "How to use flashbackscrapR for scraping entire sections"
+author: "Felix Lennert"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{flashbackscrapR-vignette}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(include = TRUE)
+library(flashbackscrapR)
+```
+
+# Introduction
+
+Sometimes you may find yourself in the situation that you want to scrape full sections and all of their threads. This is what the functions that start with the prefix `get_full_` are made for: they allow you to get the section and thread suffixes for entire sections. Both functions are complementary: `get_full_section_subs`returns a tibble that can -- with slight modifications -- be passed on to `get_full_thread_links`. You may also want to store the scraping results in a folder structure that is akin to the structure the sub- and sub-sub-sections have on flashback. The `get_full_` functions enable you to do this by automatically creating a folder name according to the section names which can then be passed on to `scrape_thread_content`. Once the scraping process is finished, you will want to combine the content of the respective sections into one .csv file per section. The `bind_section_files` will do the job for you. 
