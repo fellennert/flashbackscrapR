@@ -4,8 +4,8 @@
 #' mimic the section structure
 #'
 #' @param main_section_suffix The section's suffix
-#' @param folder_name A character vector with a folder name the scraped files
-#' are supposed to be stored in
+#' @param folder_name A character vector containing the folder name the scraped
+#' files are supposed to be stored in
 #'
 #' @return A tibble with two columns: the sub(sub)section's suffix and a folder
 #' name based on the given folder name and the sub(sub)section's name
