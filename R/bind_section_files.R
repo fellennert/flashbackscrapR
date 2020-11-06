@@ -6,15 +6,17 @@
 #' results are stored in. CSV files stored in the same folder are bound together
 #' and exported into a CSV file that has the same name as the path of the folder
 #' they were stored in.
+#' @param export_csv A logical vector, defaults to \code{TRUE}. If \code{TRUE},
+#' the concatenated tibbles are saved in a "file" folder in the folder indicated
+#' by \code{folder_name}
 #'
-#' @return A tibble with the sub-sub-sections' titles and suffixes. If there are
-#' no sub-sub-sections, it is `NULL` and a warning is printed.
+#' @return A list containing the section files.
 #'
 #' @examples
 #' bind_section_files("test_scrape")
 #'
 #' @export
-bind_section_files <- function(folder_name){
+bind_section_files <- function(folder_name, export_csv = TRUE){
   tree <- fs::dir_tree(folder_name)
 
   folder_list <- tree[!stringr::str_detect(tree, pattern = ".csv$")] %>%
@@ -39,12 +41,10 @@ bind_section_files <- function(folder_name){
     )))}
     )
 
-  purrr::walk2()
+  if (export_csv == TRUE) {
+    fs::dir_create(fs::path(folder_name, "file"))
+    purrr::walk2(tibble_list, prepared_names, ~readr::write_csv(.x, fs::path(folder_name, "file", .y)))
+  }
 
+  purrr::compact(tibble_list)
 }
-
-names(folder_list) %>%
-  purrr::map_chr(~stringr::str_remove(.x, pattern = paste0(folder_name, "/"))) %>%
-  purrr::map_chr(~stringr::str_replace_all(.x, pattern = c("/" = "-"))) %>%
-  purrr::map_chr(~paste0(.x, ".csv"))
-
