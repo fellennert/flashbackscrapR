@@ -17,7 +17,7 @@
 #' @export
 get_missing_urls <- function(link_tbl, folder_name){
   links_scraped <- fs::ir_tree("science") %>%
-  purrr::map(purrr::safely(~vroom::vroom(.x, col_types = readr::cols(
+  purrr::map(purrr::safely(~readr::read_csv(.x, col_types = readr::cols(
     url = readr::col_character(),
     date = readr::col_date(format = ""),
     time = readr::col_time(format = ""),
@@ -26,7 +26,7 @@ get_missing_urls <- function(link_tbl, folder_name){
     quoted_user = readr::col_character(),
     posting = readr::col_character(),
     posting_wo_quote = readr::col_character()
-  )))) %>%
+  ), n_max = 5))) %>%
   purrr::map_dfr("result") %>%
   dplyr::distinct(url)
 
