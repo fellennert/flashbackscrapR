@@ -15,8 +15,7 @@
 #'
 #' @export
 get_missing_threads <- function(link_tbl, folder_name){
-  suppressMessages(
-  links_scraped <- fs::dir_tree(folder_name) %>%
+  links_scraped <- fs::dir_ls(folder_name, recurse = TRUE) %>%
     purrr::map(purrr::safely(~readr::read_csv(.x, col_types = readr::cols(
       url = readr::col_character(),
       date = readr::col_date(format = ""),
@@ -30,6 +29,6 @@ get_missing_threads <- function(link_tbl, folder_name){
     n_max = 5))) %>%
     purrr::map_dfr("result") %>%
     dplyr::distinct(url)
- )
+
   link_tbl %>% dplyr::filter(!suffix %in% links_scraped$url)
 }
