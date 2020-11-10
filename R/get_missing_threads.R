@@ -14,7 +14,7 @@
 #' get_full_section_subs(link_tbl = links_science, folder_name = "science")
 #'
 #' @export
-get_missing_urls <- function(link_tbl, folder_name){
+get_missing_threads <- function(link_tbl, folder_name){
   links_scraped <- fs::dir_tree(folder_name) %>%
     purrr::map(purrr::safely(~readr::read_csv(.x, col_types = readr::cols(
       url = readr::col_character(),
