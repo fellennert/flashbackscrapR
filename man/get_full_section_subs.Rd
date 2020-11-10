@@ -9,8 +9,8 @@ get_full_section_subs(main_section_suffix, folder_name = NULL)
 \arguments{
 \item{main_section_suffix}{The section's suffix}
 
-\item{folder_name}{A character vector with a folder name the scraped files
-are supposed to be stored in}
+\item{folder_name}{A character vector containing the folder name the scraped
+files are supposed to be stored in}
 }
 \value{
 A tibble with two columns: the sub(sub)section's suffix and a folder

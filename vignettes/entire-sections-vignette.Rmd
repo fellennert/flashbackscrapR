@@ -23,4 +23,25 @@ library(flashbackscrapR)
 
 # Introduction
 
-Sometimes you may find yourself in the situation that you want to scrape full sections and all of their threads. This is what the functions that start with the prefix `get_full_` are made for: they allow you to get the section and thread suffixes for entire sections. Both functions are complementary: `get_full_section_subs`returns a tibble that can -- with slight modifications -- be passed on to `get_full_thread_links`. You may also want to store the scraping results in a folder structure that is akin to the structure the sub- and sub-sub-sections have on flashback. The `get_full_` functions enable you to do this by automatically creating a folder name according to the section names which can then be passed on to `scrape_thread_content`. Once the scraping process is finished, you will want to combine the content of the respective sections into one .csv file per section. The `bind_section_files` will do the job for you. 
+Sometimes you may find yourself in the situation that you want to scrape full sections and all of their threads. This is what the functions that start with the prefix `get_full_` are made for: they allow you to get the section and thread suffixes for entire sections. Both functions are complementary: `get_full_section_subs`returns a tibble that can -- with slight modifications -- be passed on to `get_full_thread_links`. You may also want to store the scraping results in a folder structure that is akin to the structure the sub- and sub-sub-sections have on flashback. The `get_full_` functions enable you to do this by automatically creating a folder name according to the section names which can then be passed on to `scrape_thread_content`. Moreover, the scraping process usually take multiple days (depending on the number of threads you go for) and not getting every one of the threads at first is often inevitable. This requires functions that facilitate the re-scraping of the remaining threads. `get_missing_threads` got you covered here, at least as long as you have stored your links to scrape and exported the files throughout the scraping process. Eventually, you will want to cram the individual sections together into one tibble. 
+Once the scraping process is finished, you will want to combine the content of the respective sections into one .csv file per section. `bind_section_files` will do the job for you.
+
+The following figure illustrates the aforementioned steps:
+
+![](figures/fig2.png)
+
+The following section will guide you through the process of scraping full sections. Code examples will be provided, but due to the fact that they would have to run each time this vignette is knit, I will not execute the code but rather opt for loading example data to exemplify the output.
+
+# The work flow
+
+First, you will want to choose your section of interest. In my case, it is the science section. Then, you go to <flashback.org> and copy the suffix.
+
+![](figures/science_suffix.png)
+
+`get_full_section_subs()` provides you with its sub sections' suffixes. Besides, you can specify the name of the folder you want to store the results in. Normally, you would want to choose a name that stands for the section -- in my case "science". 
+
+```{r}
+t <- get_full_section_subs(main_section_suffix = "/f102", folder_name = "science")
+write_csv
+```
+
