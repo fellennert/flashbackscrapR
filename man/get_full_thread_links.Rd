@@ -4,18 +4,10 @@
 \alias{get_full_thread_links}
 \title{Get entire main section's links}
 \usage{
-get_full_thread_links(
-  suffix,
-  folder_name,
-  cut_off = "2000-01-01",
-  delay = TRUE
-)
+get_full_thread_links(suffix, path, cut_off = "2000-01-01", delay = TRUE)
 }
 \arguments{
 \item{suffix}{The section's suffix}
-
-\item{folder_name}{A character vector with a folder name the scraped files
-are supposed to be stored in}
 
 \item{cut_off}{A character string containing the date at which the latest
 post in the thread should had been posted on. Has to be in the format
@@ -24,6 +16,9 @@ post in the thread should had been posted on. Has to be in the format
 \item{delay}{flashback.org's robots.txt-file asks for putting a five
 second delay between each iteration. You can deliberately ignore this by
 setting \code{delay = FALSE}. Note that THIS IS NOT RECOMMENDED!}
+
+\item{folder_name}{A character vector with a folder name the scraped files
+are supposed to be stored in}
 }
 \value{
 A tibble with the name of the sub(sub) section's suffix
