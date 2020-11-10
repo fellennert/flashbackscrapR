@@ -35,7 +35,7 @@ get_full_thread_links <- function(suffix, path, cut_off = "2000-01-01", delay = 
     tibble::tibble(
       sub_suffix = suffix,
       folder_name = path,
-      thread_links = tryCatch(get_thread_links(suffix = suffix, cut_off = cut_off, pure_suffix = TRUE),
+      suffix = tryCatch(get_thread_links(suffix = suffix, cut_off = cut_off, pure_suffix = TRUE),
                               error = function(e) NA_character_)
     )
   }) %>%
