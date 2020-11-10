@@ -15,6 +15,7 @@
 #'
 #' @export
 get_missing_threads <- function(link_tbl, folder_name){
+  suppressWarnings(
   links_scraped <- fs::dir_tree(folder_name) %>%
     purrr::map(purrr::safely(~readr::read_csv(.x, col_types = readr::cols(
       url = readr::col_character(),
@@ -29,6 +30,6 @@ get_missing_threads <- function(link_tbl, folder_name){
     n_max = 5))) %>%
     purrr::map_dfr("result") %>%
     dplyr::distinct(url)
-
-  link_tbl %>% dplyr::filter(!thread_links %in% links_scraped$url)
+ )
+  link_tbl %>% dplyr::filter(!suffix %in% links_scraped$url)
 }
