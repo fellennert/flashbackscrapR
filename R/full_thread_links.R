@@ -23,10 +23,10 @@
 #'   cut_off = "2020-10-25", delay = TRUE)
 #'
 #' @export
-get_full_thread_links <- function(suffix, folder_name, cut_off = "2000-01-01", delay = TRUE){
+get_full_thread_links <- function(suffix, path, cut_off = "2000-01-01", delay = TRUE){
   initial_tibble <- tibble::tibble(
     suffix = suffix,
-    folder_name = folder_name,
+    folder_name = path,
     cut_off = cut_off,
     delay = delay
   )
