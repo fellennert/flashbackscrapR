@@ -17,7 +17,10 @@
 #'
 #' @export
 bind_section_files <- function(folder_name, export_csv = TRUE){
+
+  suppressMessages(
   tree <- fs::dir_tree(folder_name)
+  )
 
   folder_list <- tree[!stringr::str_detect(tree, pattern = ".csv$")] %>%
     purrr::map(fs::dir_ls) %>%
@@ -43,7 +46,7 @@ bind_section_files <- function(folder_name, export_csv = TRUE){
 
   if (export_csv == TRUE) {
     fs::dir_create(fs::path(folder_name, "file"))
-    purrr::walk2(tibble_list, prepared_names, ~readr::write_csv(.x, fs::path(folder_name, "file", .y)))
+    purrr::walk2(tibble_list, prepared_names, ~readr::write_csv(.x, fs::path(folder_name, "files", .y)))
   }
 
   purrr::compact(tibble_list)
