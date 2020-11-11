@@ -52,7 +52,7 @@ The result then looks like this:
 
 `suffix` refers to the sub section's suffix, `path` is a folder name created from the section names on flashback. 
 
-`get_full_thread_links` is optimized to work with this output tibble. This implies that, in theory, you are not required to specify further arguments to work with it. In most of the cases, however, you will want to not scrape links to threads with no activity after a certain cut-off date. Also, you will be in a situation where you will just prefer to scrape without delays between each request (even though flashback does not want you to). Hence, I will make some slight modifications to the tibble (using `dplyr`).
+`get_full_thread_links` is optimized to work with this output tibble. This implies that, in theory, you are not required to specify further arguments to work with it. In most of the cases, however, you will want to not scrape links to threads with no activity after a certain cut-off date. Also, you will be in a situation where you will just prefer to scrape without delays between each request (even though flashback does not want you to). Hence, I will make some slight modifications to the tibble (using `dplyr`). By default, the links and a table containing meta data on the scrape (i.e., time, suffix, chosen cut-off) are exported as CSV files. The folder it shall be stored in can be specified with the argument `output_folder`.
 
 ```{r message=FALSE}
 sub_sections <- readr::read_csv("auxiliary_files/science_subs.csv") %>% 
@@ -63,7 +63,6 @@ sub_sections <- readr::read_csv("auxiliary_files/science_subs.csv") %>%
 ```{r echo=FALSE}
 sub_sections
 ```
-
 
 Then, I can pass those arguments on to the `get_full_thread_links` function. I thereby use `purrr::pmap` as it takes the entire tibble and then iterates through it row by row passing the each value to the corresponding argument.
 
@@ -128,4 +127,18 @@ missing_links %>% purrr::pwalk(scrape_thread_content)
 ```
 
 Ideally, this second try solves every problem. If it does not, try again, and if that has not solved everything, file an issue on GitHub and I will look into it. 
+
+Now that everything has gone well, the files in the respective folder should be bound together. This is to keep the folders sort of clean. The function takes the name of the section folder -- in my case, this is "science" -- and returns a list of tibbles. Those can be exported into the section folder by setting `export_csv = TRUE`. This stores the resulting tibbles in a folder named `files`.
+
+```{r eval=FALSE, include=TRUE}
+bind_section_files("science")
+```
+
+```{r include=FALSE}
+list <- bind_section_files("science")
+```
+
+```{r echo=FALSE}
+str(list)
+```
 
