@@ -12,6 +12,12 @@
 #' @param delay flashback.org's robots.txt-file asks for putting a five
 #' second delay between each iteration. You can deliberately ignore this by
 #' setting \code{delay = FALSE}. Note that THIS IS NOT RECOMMENDED!
+#' @param export_links If set to \code{TRUE}, a CSV file containing the links is
+#' exported
+#' @param export_meta If set to \code{TRUE}, a CSV file containing data on the
+#' scrape is exported
+#' @param output_folder A character string determining the folder the CSV files
+#' containing the links and the meta data should be stored in.
 #'
 #' @return A tibble with the name of the sub(sub) section's suffix
 #' \code{sub_suffix}, the name of the folder the scraped thread should be stored
@@ -23,7 +29,16 @@
 #'   cut_off = "2020-10-25", delay = TRUE)
 #'
 #' @export
-get_full_thread_links <- function(suffix, path, cut_off = "2000-01-01", delay = TRUE){
+get_full_thread_links <- function(suffix, path, cut_off = "2000-01-01", delay = TRUE, export_links = TRUE, export_meta = TRUE, output_folder = ""){
+  if (export_meta == TRUE) {
+    meta <- tibble::tibble(
+      scrape_time = lubridate::now(),
+      chosen_cutoff = cut_off,
+      suffix = suffix
+    ) %>%
+      readr::write_csv(output, fs::path(output_folder, "meta_links_", suffix, ext = "csv"))
+  }
+
   initial_tibble <- tibble::tibble(
     suffix = suffix,
     folder_name = path,
@@ -31,7 +46,7 @@ get_full_thread_links <- function(suffix, path, cut_off = "2000-01-01", delay = 
     delay = delay
   )
 
-  purrr::pmap(initial_tibble, ~{
+  output <- purrr::pmap(initial_tibble, ~{
     tibble::tibble(
       sub_suffix = suffix,
       folder_name = path,
@@ -45,5 +60,6 @@ get_full_thread_links <- function(suffix, path, cut_off = "2000-01-01", delay = 
     dplyr::mutate(file_name = cumsum(file_name) %>%
                     as.character())
 
-
+  if (export_links == TRUE) readr::write_csv(output, fs::path(output_folder, "links_", suffix, ext = "csv"))
+  if (export_meta == TRUE) readr::write_csv(output, fs::path(output_folder, "links_", suffix, ext = "csv"))
 }
