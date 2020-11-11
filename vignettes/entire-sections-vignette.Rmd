@@ -34,14 +34,98 @@ The following section will guide you through the process of scraping full sectio
 
 # The work flow
 
-First, you will want to choose your section of interest. In my case, it is the science section. Then, you go to <flashback.org> and copy the suffix.
+First, you will want to choose your section of interest. In my case, it is the science section. Then, you go to [www.flashback.org](www.flashback.org) and copy the suffix.
 
 ![](figures/science_suffix.png)
 
 `get_full_section_subs()` provides you with its sub sections' suffixes. Besides, you can specify the name of the folder you want to store the results in. Normally, you would want to choose a name that stands for the section -- in my case "science". 
 
-```{r}
-t <- get_full_section_subs(main_section_suffix = "/f102", folder_name = "science")
-write_csv
+```{r eval=FALSE, include=TRUE}
+get_full_section_subs(main_section_suffix = "/f102", folder_name = "science")
 ```
+
+The result then looks like this:
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+(readr::read_csv("auxiliary_files/science_subs.csv"))
+```
+
+`suffix` refers to the sub section's suffix, `path` is a folder name created from the section names on flashback. 
+
+`get_full_thread_links` is optimized to work with this output tibble. This implies that, in theory, you are not required to specify further arguments to work with it. In most of the cases, however, you will want to not scrape links to threads with no activity after a certain cut-off date. Also, you will be in a situation where you will just prefer to scrape without delays between each request (even though flashback does not want you to). Hence, I will make some slight modifications to the tibble (using `dplyr`).
+
+```{r message=FALSE}
+sub_sections <- readr::read_csv("auxiliary_files/science_subs.csv") %>% 
+  dplyr::mutate(cut_off = "2020-11-09",
+                delay = FALSE)
+```
+
+```{r echo=FALSE}
+sub_sections
+```
+
+
+Then, I can pass those arguments on to the `get_full_thread_links` function. I thereby use `purrr::pmap` as it takes the entire tibble and then iterates through it row by row passing the each value to the corresponding argument.
+
+```{r eval=FALSE, include=TRUE}
+thread_links <- sub_sections %>% 
+  purrr::pmap(get_full_thread_links) %>% 
+  dplyr::bind_rows()
+```
+
+The results look like this:
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+(thread_links <- readr::read_csv("auxiliary_files/thread_links.csv"))
+```
+
+As `scrape_thread_content` does not take the sub_suffix argument, the column needs to be dropped. Again, if you want to override the default break the scraper takes after each iteration, a `delay` column needs to be added. 
+
+```{r message=FALSE, warning=FALSE}
+thread_links_for_scrape <- thread_links %>% 
+  dplyr::select(-sub_suffix) %>% 
+  dplyr::mutate(delay = FALSE)
+```
+```{r echo=FALSE}
+thread_links_for_scrape
+```
+
+Then, again, the resulting tibble can be passed on to the next function using `purrr`. In the following example, I will just scrape the first 10 threads. Given that I have provided it a vector of folder and file names, the function will also create a folder and export the file at the specific path. Due to this feature, I can forgo storing it in a list in my environment and use `purrr::pwalk` instead of `purrr::pmap`. Furthermore, it is highly advisable to store the exact version of the link tibble that you use for the scrape somewhere on your machine as you will need it in case the scraper does not catch all the threads you wanted (this can happen due to multiple problems, such as connection timeouts or simply the server temporarily blocking your scraper). Then you can use the tibble with the links to compare it with the threads you have caught by using the `get_missing_threads` function.
+
+```{r eval=FALSE, include=TRUE}
+thread_links_for_scrape %>% 
+  dplyr::slice(1:10) %>% 
+  purrr::pwalk(scrape_thread_content)
+
+thread_links_for_scrape %>% 
+  dplyr::slice(1:11) %>% #for illustration purposes, see later
+  readr::write_csv("science/link_tbl.csv")
+```
+
+The structure of the newly created folders is based on the folder names specified in the column `folder_name`. In my case, it looks like the following:
+
+```{r}
+fs::dir_tree("science")
+```
+
+Here, each folder only contains a few threads since I, on the one hand, have limited the number of threads to the ones with new postings from 2020-11-09 (this vignette is written on 2020-11-10), and, on the other hand, just have scraped the first 10 threads from the resulting tibble. However, if you aim for scraping entire sections, you will likely choose cut-offs that are further back in time and, therefore, end up with thousands of individual thread files. 
+
+The next step is checking for missing files and rescraping them. For illustratory purposes, I have added one link to the stored tibble that hasn't been scraped so far. 
+
+```{r message=FALSE, warning=FALSE, include=TRUE}
+missing_links <- readr::read_csv("science/link_tbl.csv") %>% 
+  get_missing_threads(link_tbl = ., folder_name = "science")
+```
+
+```{r echo=FALSE}
+missing_links
+```
+
+This can now be passed on to the `scrape_thread_content` function:
+
+```{r eval=FALSE, include=TRUE}
+missing_links %>% purrr::pwalk(scrape_thread_content)
+```
+
+Ideally, this second try solves every problem. If it does not, try again, and if that has not solved everything, file an issue on GitHub and I will look into it. 
 
