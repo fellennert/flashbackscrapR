@@ -4,7 +4,15 @@
 \alias{get_full_thread_links}
 \title{Get entire main section's links}
 \usage{
-get_full_thread_links(suffix, path, cut_off = "2000-01-01", delay = TRUE)
+get_full_thread_links(
+  suffix,
+  path,
+  cut_off = "2000-01-01",
+  delay = TRUE,
+  export_links = TRUE,
+  export_meta = TRUE,
+  output_folder = ""
+)
 }
 \arguments{
 \item{suffix}{The section's suffix}
@@ -16,6 +24,15 @@ post in the thread should had been posted on. Has to be in the format
 \item{delay}{flashback.org's robots.txt-file asks for putting a five
 second delay between each iteration. You can deliberately ignore this by
 setting \code{delay = FALSE}. Note that THIS IS NOT RECOMMENDED!}
+
+\item{export_links}{If set to \code{TRUE}, a CSV file containing the links is
+exported}
+
+\item{export_meta}{If set to \code{TRUE}, a CSV file containing data on the
+scrape is exported}
+
+\item{output_folder}{A character string determining the folder the CSV files
+containing the links and the meta data should be stored in.}
 
 \item{folder_name}{A character vector with a folder name the scraped files
 are supposed to be stored in}
