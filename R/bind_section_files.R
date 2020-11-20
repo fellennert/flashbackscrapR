@@ -19,7 +19,7 @@
 bind_section_files <- function(folder_name, export_csv = TRUE){
 
   suppressMessages(
-  tree <- fs::dir_tree(folder_name)
+    tree <- fs::dir_ls(folder_name, recurse = TRUE)
   )
 
   folder_list <- tree[!stringr::str_detect(tree, pattern = ".csv$")] %>%
@@ -41,11 +41,13 @@ bind_section_files <- function(folder_name, export_csv = TRUE){
       quoted_user = readr::col_character(),
       posting = readr::col_character(),
       posting_wo_quote = readr::col_character()
-    )))}
+    )) %>%
+      dplyr::arrange(url, date, time))
+    }
     )
 
   if (export_csv == TRUE) {
-    fs::dir_create(fs::path(folder_name, "file"))
+    fs::dir_create(fs::path(folder_name, "files"))
     purrr::walk2(tibble_list, prepared_names, ~readr::write_csv(.x, fs::path(folder_name, "files", .y)))
   }
 
