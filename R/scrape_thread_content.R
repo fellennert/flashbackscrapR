@@ -40,15 +40,17 @@ scrape_thread_content <- function(suffix, export_csv = FALSE, folder_name = NULL
   n_pages <- get_n_pages_thread(suffix = suffix)
   url_vec <- generate_links(suffix = suffix, n_pages = n_pages)
 
+  if (length(url_vec) > 5000) return(scrape_large_thread(suffix, urls = url_vec, export_csv, folder_name, file_name, delay))
+
   if (delay == TRUE) {
-    pages <- purrr::map(url_vec, ~{
+    pages <- purrr::map(url_vec %>% rev(), ~{
       Sys.sleep(5)
       xml2::read_html(.x)
     })
   }
 
   if (delay == FALSE) {
-    pages <- purrr::map(url_vec, insist_scrape_page)
+    pages <- purrr::map(url_vec %>% rev(), insist_scrape_page)
   }
 
   if (stringr::str_detect(rvest::html_nodes(pages[[1]], ".text-warning") %>%
@@ -92,7 +94,8 @@ scrape_thread_content <- function(suffix, export_csv = FALSE, folder_name = NULL
          author_name = dplyr::case_when(!stringr::str_detect(author_name, "[:alnum:]") ~ NA_character_,
                                         TRUE ~ author_name),
          author_link = dplyr::case_when(is.na(author_name) == TRUE ~ NA_character_,
-                                        TRUE ~ author_link))
+                                        TRUE ~ author_link)) %>%
+    dplyr::arrange(date, time)
 
   if (export_csv == TRUE) save_it(folder_name, file_name, output_tbl)
   if (export_csv == FALSE & is.null(folder_name) == FALSE | is.null(file_name) == FALSE) {

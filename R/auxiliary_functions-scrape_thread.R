@@ -226,3 +226,70 @@ save_it <- function(folder_name, file_name, output_tbl) {
   readr::write_csv(x = output_tbl,
                    file = paste0(folder_name, "/", file_name, ".csv"))
 }
+
+### scraping large threads
+
+scrape_large_thread <- function(suffix, urls = url_vec, export_csv, folder_name, file_name, delay){
+
+  chunks <- split(urls %>% rev(), ceiling(seq_along(urls)/2000))
+  chunk_names <- paste0(stringr::str_remove(suffix, "/"), "_", seq_along(chunks), ".csv")
+
+  purrr::walk2(chunks, chunk_names, ~{
+    pages <- vector(mode = "list", length = length(.x))
+    if (delay == TRUE) {
+      for (i in seq_along(.x)){
+        Sys.sleep(5)
+        pages[[i]] <- xml2::read_html(.x[[i]])
+      }
+    }
+
+    if (delay == FALSE) {
+      for (i in seq_along(.x)){
+        pages[[i]] <- xml2::read_html(.x[[i]])
+      }
+    }
+
+    tibble::tibble(
+      url = suffix,
+      date = lubridate::ymd(purrr::map(pages, get_date_thread) %>% unlist() %>% .[!is.na(.)]),
+      time = purrr::map(pages, get_time) %>% unlist(),
+      author_name = purrr::map(pages, get_author_name) %>% unlist(),
+      quoted_user = purrr::map(pages, get_quoted_user) %>% unlist() %>% .[. != "message from moderator"]
+    ) %>%
+      dplyr::bind_cols(purrr::map_dfr(pages, get_content_remove_quotes)) %>%
+      add_author_name(., pages) %>%
+      dplyr::mutate(posting_wo_quote = dplyr::case_when(posting_wo_quote == "" ~ posting,
+                                                        TRUE ~ posting_wo_quote)) %>%
+      dplyr::mutate(quoted_user = clean_quoted_user(posting, author_name),
+                    quoted_user = dplyr::case_when(posting == posting_wo_quote ~ NA_character_,
+                                                   TRUE ~ quoted_user),
+                    author_name = dplyr::case_when(!stringr::str_detect(author_name, "[:alnum:]") ~ NA_character_,
+                                                   TRUE ~ author_name,
+                                                   TRUE ~ author_link)) %>%
+    readr::write_csv(.y)
+  })
+
+  gc()
+
+  output_tbl <- purrr::map_dfr(chunk_names, readr::read_csv,
+                               col_types = readr::cols(
+                                 url = readr::col_character(),
+                                 date = readr::col_date(format = ""),
+                                 time = readr::col_time(format = ""),
+                                 author_name = readr::col_character(),
+                                 author_link = readr::col_character(),
+                                 quoted_user = readr::col_character(),
+                                 posting = readr::col_character(),
+                                 posting_wo_quote = readr::col_character()
+                               )
+  ) %>%
+    dplyr::arrange(date, time)
+
+  fs::file_delete(chunk_names)
+
+  if (export_csv == TRUE) save_it(folder_name, file_name, output_tbl)
+  if (export_csv == FALSE & is.null(folder_name) == FALSE | is.null(file_name) == FALSE) {
+    save_it(folder_name, file_name, output_tbl)
+  }
+  output_tbl
+}
