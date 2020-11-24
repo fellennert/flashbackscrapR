@@ -31,12 +31,12 @@
 #' @export
 get_full_thread_links <- function(suffix, path, cut_off = "2000-01-01", delay = TRUE, export_links = TRUE, export_meta = TRUE, output_folder = ""){
   if (export_meta == TRUE) {
-    meta <- tibble::tibble(
+    tibble::tibble(
       scrape_time = lubridate::now(),
       chosen_cutoff = cut_off,
       suffix = suffix
     ) %>%
-      readr::write_csv(fs::path(output_folder, paste0("meta_links_", suffix), ext = "csv"))
+      readr::write_csv(fs::path(output_folder, paste0("meta_links", stringr::str_replace_all(suffix, c("/" = "_"))), ext = "csv"))
   }
 
   initial_tibble <- tibble::tibble(
