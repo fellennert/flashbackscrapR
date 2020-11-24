@@ -36,7 +36,7 @@ get_full_thread_links <- function(suffix, path, cut_off = "2000-01-01", delay = 
       chosen_cutoff = cut_off,
       suffix = suffix
     ) %>%
-      readr::write_csv(fs::path(output_folder, "meta_links_", suffix, ext = "csv"))
+      readr::write_csv(fs::path(output_folder, paste0("meta_links_", suffix), ext = "csv"))
   }
 
   initial_tibble <- tibble::tibble(
