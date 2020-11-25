@@ -60,6 +60,8 @@ get_full_thread_links <- function(suffix, path, cut_off = "2000-01-01", delay = 
     dplyr::mutate(file_name = cumsum(file_name) %>%
                     as.character())
 
-  if (export_links == TRUE) readr::write_csv(output, fs::path(output_folder, "links_", suffix, ext = "csv"))
-  if (export_meta == TRUE) readr::write_csv(output, fs::path(output_folder, "links_", suffix, ext = "csv"))
+  if (export_links == TRUE) readr::write_csv(output, fs::path(output_folder, paste0("meta_links", stringr::str_replace_all(suffix, c("/" = "_"))), ext = "csv"))
+  if (export_meta == TRUE) readr::write_csv(output, fs::path(output_folder, paste0("links", stringr::str_replace_all(suffix, c("/" = "_"))), ext = "csv"))
+
+  output
 }
