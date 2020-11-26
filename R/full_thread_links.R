@@ -50,9 +50,13 @@ get_full_thread_links <- function(suffix, path, cut_off = "2000-01-01", delay = 
     tibble::tibble(
       sub_suffix = suffix,
       folder_name = path,
-      suffix = tryCatch(get_thread_links(suffix = suffix, cut_off = cut_off, pure_suffix = TRUE),
-                              error = function(e) NA_character_)
-    )
+    ) %>%
+      dplyr::bind_cols(tryCatch(get_thread_links(suffix = suffix, cut_off = cut_off, pure_suffix = FALSE),
+                                error = function(e) tibble::tibble(
+                                  links = NA_character_,
+                                  date = lubridate::NA_Date_,
+                                  title = NA_character_
+                                )))
   }) %>%
     dplyr::bind_rows() %>%
     dplyr::mutate(file_name = 1) %>%
