@@ -16,7 +16,7 @@
 #' bind_section_files("test_scrape")
 #'
 #' @export
-bind_section_files <- function(folder_name, export_csv = TRUE){
+bind_section_files <- function(folder_name, export_csv = FALSE){
 
   tree <- fs::dir_ls(folder_name, recurse = TRUE)
 
@@ -29,26 +29,28 @@ bind_section_files <- function(folder_name, export_csv = TRUE){
     purrr::map_chr(~stringr::str_replace_all(.x, pattern = c("/" = "-"))) %>%
     purrr::map_chr(~paste0(.x, ".csv"))
 
+
   tibble_list <- folder_list %>%
-    purrr::reduce(c) %>%
-    .[stringr::str_detect(., ".csv$")] %>%
-    purrr::map(purrr::safely(~readr::read_csv(.x, col_types = readr::cols(
-      url = readr::col_character(),
-      date = readr::col_date(format = ""),
-      time = readr::col_time(format = ""),
-      author_name = readr::col_character(),
-      author_link = readr::col_character(),
-      quoted_user = readr::col_character(),
-      posting = readr::col_character(),
-      posting_wo_quote = readr::col_character()
-    )))) %>%
-    purrr::map_dfr("result") %>%
-    dplyr::arrange(url, date, time)
+    purrr::map(~{purrr::map_dfr(.x,
+                                ~readr::read_csv(.x, col_types = readr::cols(
+                                  url = readr::col_character(),
+                                  date = readr::col_date(format = ""),
+                                  time = readr::col_time(format = ""),
+                                  author_name = readr::col_character(),
+                                  author_link = readr::col_character(),
+                                  quoted_user = readr::col_character(),
+                                  posting = readr::col_character(),
+                                  posting_wo_quote = readr::col_character()
+                                )) %>%
+                                  45
+
+                                dplyr::arrange(url, date, time))
+    })
 
   if (export_csv == TRUE) {
     fs::dir_create(fs::path(folder_name, "files"))
     purrr::walk2(tibble_list, prepared_names, ~readr::write_csv(.x, fs::path(folder_name, "files", .y)))
   }
 
-  tibble_list
+  purrr::compact(tibble_list)
 }
