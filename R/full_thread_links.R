@@ -29,7 +29,7 @@
 #'   cut_off = "2020-10-25", delay = TRUE)
 #'
 #' @export
-get_full_thread_links <- function(suffix, path, cut_off = "2000-01-01", delay = TRUE, export_links = TRUE, export_meta = TRUE, output_folder = ""){
+get_full_thread_links <- function(suffix, path, cut_off = "2000-01-01", delay = TRUE, export_links = FALSE, export_meta = TRUE, output_folder = ""){
   if (export_meta == TRUE) {
     tibble::tibble(
       scrape_time = lubridate::now(),

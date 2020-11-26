@@ -18,9 +18,7 @@
 #' @export
 bind_section_files <- function(folder_name, export_csv = TRUE){
 
-  suppressMessages(
-    tree <- fs::dir_ls(folder_name, recurse = TRUE)
-  )
+  tree <- fs::dir_ls(folder_name, recurse = TRUE)
 
   folder_list <- tree[!stringr::str_detect(tree, pattern = ".csv$")] %>%
     purrr::map(fs::dir_ls) %>%
@@ -32,7 +30,9 @@ bind_section_files <- function(folder_name, export_csv = TRUE){
     purrr::map_chr(~paste0(.x, ".csv"))
 
   tibble_list <- folder_list %>%
-    purrr::map(~{purrr::map_dfr(.x, ~readr::read_csv(.x, col_types = readr::cols(
+    purrr::reduce(c) %>%
+    .[stringr::str_detect(., ".csv$")] %>%
+    purrr::map(purrr::safely(~readr::read_csv(.x, col_types = readr::cols(
       url = readr::col_character(),
       date = readr::col_date(format = ""),
       time = readr::col_time(format = ""),
@@ -41,15 +41,14 @@ bind_section_files <- function(folder_name, export_csv = TRUE){
       quoted_user = readr::col_character(),
       posting = readr::col_character(),
       posting_wo_quote = readr::col_character()
-    )) %>%
-      dplyr::arrange(url, date, time))
-    }
-    )
+    )))) %>%
+    purrr::map_dfr("result") %>%
+    dplyr::arrange(url, date, time)
 
   if (export_csv == TRUE) {
     fs::dir_create(fs::path(folder_name, "files"))
     purrr::walk2(tibble_list, prepared_names, ~readr::write_csv(.x, fs::path(folder_name, "files", .y)))
   }
 
-  purrr::compact(tibble_list)
+  tibble_list
 }
