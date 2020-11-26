@@ -42,9 +42,7 @@ bind_section_files <- function(folder_name, export_csv = FALSE){
                                   posting = readr::col_character(),
                                   posting_wo_quote = readr::col_character()
                                 )) %>%
-                                  45
-
-                                dplyr::arrange(url, date, time))
+                                  dplyr::arrange(url, date, time))
     })
 
   if (export_csv == TRUE) {
