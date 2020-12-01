@@ -231,7 +231,7 @@ save_it <- function(folder_name, file_name, output_tbl) {
 
 scrape_large_thread <- function(suffix, urls = url_vec, export_csv, folder_name, file_name, delay){
 
-  chunks <- split(urls %>% rev(), ceiling(seq_along(urls)/2000))
+  chunks <- split(urls %>% rev(), ceiling(seq_along(urls)/500))
   chunk_names <- paste0(stringr::str_remove(suffix, "/"), "_", seq_along(chunks), ".csv")
 
   purrr::walk2(chunks, chunk_names, ~{
@@ -239,13 +239,13 @@ scrape_large_thread <- function(suffix, urls = url_vec, export_csv, folder_name,
     if (delay == TRUE) {
       for (i in seq_along(.x)){
         Sys.sleep(5)
-        pages[[i]] <- xml2::read_html(.x[[i]])
+        pages[[i]] <- insist_scrape_page(.x[[i]])
       }
     }
 
     if (delay == FALSE) {
       for (i in seq_along(.x)){
-        pages[[i]] <- xml2::read_html(.x[[i]])
+        pages[[i]] <- insist_scrape_page(.x[[i]])
       }
     }
 
