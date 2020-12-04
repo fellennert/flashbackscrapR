@@ -44,31 +44,23 @@ get_thread_links <- function(suffix, cut_off = "2000-01-01", delay = TRUE, pure_
     if (delay == TRUE) {
       Sys.sleep(5)
     }
+    if (i %% 100 == 0) print(date_ind)
   }
 
-  links <- thread_links %>% purrr::compact() %>% purrr::reduce(c)
-  date <- thread_dates %>% purrr::compact() %>% purrr::reduce(c)
-  titles <- thread_titles %>% purrr::compact() %>% purrr::reduce(c)
-
-  if (length(links) != length(date)) {
-    length(links) <- max(c(length(links), length(date)))
-    length(date) <- max(c(length(links), length(date)))
-  }
-
-  if (pure_suffix == TRUE) {
+   if (pure_suffix == TRUE) {
     return(
       tibble::tibble(
-        links = links,
-        date = date
+        links = thread_links %>% purrr::compact() %>% purrr::reduce(c),
+        date = thread_dates %>% purrr::compact() %>% purrr::reduce(c)
       ) %>%
       dplyr::filter(date >= lubridate::ymd(cut_off)) %>%
       dplyr::pull(links))
   }
 
   tibble::tibble(
-        links = links,
-        date = date,
-        title = titles
+        links = thread_links %>% purrr::compact() %>% purrr::reduce(c),
+        date = thread_dates %>% purrr::compact() %>% purrr::reduce(c),
+        title = thread_titles %>% purrr::compact() %>% purrr::reduce(c)
       ) %>%
     dplyr::filter(date >= lubridate::ymd(cut_off))
 

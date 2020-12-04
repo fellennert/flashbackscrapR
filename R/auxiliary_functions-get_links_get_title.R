@@ -28,6 +28,7 @@ generate_links <- function(suffix, n_pages) {
 get_date_links <- function(page) {
   rvest::html_nodes(page, ".td_last_post div") %>%
     rvest::html_text() %>%
+    .[c(TRUE, FALSE)] %>%
     stringr::str_extract("[:digit:]{4}\\-[:digit:]{2}\\-[:digit:]{2}|Igår|Idag") %>%
     .[!is.na(.)] %>%
     stringr::str_replace_all(pattern = c("Igår" = as.character(lubridate::today() - 1),
