@@ -27,9 +27,6 @@ get_full_section_subs <- function(main_section_suffix, folder_name = NULL) {
                                                          "ü" = "u"))) %>%
     tibble::rowid_to_column("indicator")
 
-  oldw <- getOption("warn")
-  options(warn = -1)
-
   suppressWarnings(
   subsubs <- purrr::map2(subs$indicator, subs$suffix, ~tibble::tibble(
     indicator = .x,
