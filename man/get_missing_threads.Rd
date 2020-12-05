@@ -4,11 +4,10 @@
 \alias{get_missing_threads}
 \title{Get missing urls}
 \usage{
-get_missing_threads(link_tbl, folder_name)
+get_missing_threads(link_vec, folder_name)
 }
 \arguments{
-\item{link_tbl}{A tibble containing the thread links that are to be scraped;
-thread links need to be stored in a column named \code{thread_links}}
+\item{link_vec}{A vector containing the links that should have been scraped}
 
 \item{folder_name}{A character vector with a folder name the scraped files
 are stored in}

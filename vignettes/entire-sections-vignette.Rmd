@@ -18,6 +18,8 @@ knitr::opts_chunk$set(
 
 ```{r setup, include = FALSE}
 knitr::opts_chunk$set(include = TRUE)
+devtools::install_github("fellennert/flashbackscrapR")
+
 library(flashbackscrapR)
 ```
 
@@ -70,6 +72,12 @@ Then, I can pass those arguments on to the `get_full_thread_links` function. I t
 thread_links <- sub_sections %>% 
   purrr::pmap(get_full_thread_links) %>% 
   dplyr::bind_rows()
+```
+
+By default, this function exports a small .csv file containing the date of the scrape, the chosen cutoff date, and the respective suffix. If `export_links` is set to `TRUE`, the respective section's links are exported as well -- the name of the respective sub-section and sub-sub-section link is then included in the file name. They can be read into R using the `fs` package.
+
+```{r eval=FALSE, message=FALSE, warning=FALSE, include=TRUE}
+fs::dir_ls(path = "folder_name", glob = "folder_name/links*.csv")
 ```
 
 The results look like this:
@@ -130,15 +138,16 @@ Ideally, this second try solves every problem. If it does not, try again, and if
 
 Now that everything has gone well, the files in the respective folder should be bound together. This is to keep the folders sort of clean. The function takes the name of the section folder -- in my case, this is "science" -- and returns a list of tibbles. Those can be exported into the section folder by setting `export_csv = TRUE`. This stores the resulting tibbles in a folder named `files`.
 
-```{r eval=FALSE, include=TRUE}
-bind_section_files("science")
+```{r eval=FALSE, message=FALSE, warning=FALSE, include=TRUE}
+bind_section_files("science", export_csv = FALSE)
 ```
 
-```{r include=FALSE}
-list <- bind_section_files("science")
+```{r message=FALSE, warning=FALSE, include=FALSE}
+#list <- bind_section_files("science")
 ```
 
 ```{r echo=FALSE}
 str(list)
 ```
+
 

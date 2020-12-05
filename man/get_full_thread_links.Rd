@@ -9,7 +9,7 @@ get_full_thread_links(
   path,
   cut_off = "2000-01-01",
   delay = TRUE,
-  export_links = TRUE,
+  export_links = FALSE,
   export_meta = TRUE,
   output_folder = ""
 )

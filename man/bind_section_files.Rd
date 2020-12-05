@@ -4,7 +4,7 @@
 \alias{bind_section_files}
 \title{Bind each section's files together}
 \usage{
-bind_section_files(folder_name, export_csv = TRUE)
+bind_section_files(folder_name, export_csv = FALSE)
 }
 \arguments{
 \item{folder_name}{A character vector containing the name of the folders the
