@@ -3,8 +3,7 @@
 #' If the process has stopped, you can read in the files and determine the
 #' missing ones
 #'
-#' @param link_tbl A tibble containing the thread links that are to be scraped;
-#' thread links need to be stored in a column named \code{thread_links}
+#' @param link_vec A vector containing the links that should have been scraped
 #' @param folder_name A character vector with a folder name the scraped files
 #' are stored in
 #'
@@ -14,7 +13,7 @@
 #' get_full_section_subs(link_tbl = links_science, folder_name = "science")
 #'
 #' @export
-get_missing_threads <- function(link_tbl, folder_name){
+get_missing_threads <- function(link_vec, folder_name){
   suppressMessages(
   links_scraped <- fs::dir_ls(folder_name, recurse = TRUE) %>%
     purrr::map(purrr::safely(~readr::read_csv(.x, col_types = readr::cols(
@@ -31,5 +30,5 @@ get_missing_threads <- function(link_tbl, folder_name){
     purrr::map_dfr("result") %>%
     dplyr::distinct(url)
   )
-  link_tbl %>% dplyr::filter(!suffix %in% links_scraped$url)
+  link_vec[!link_vec %in% links_scraped$url]
 }
