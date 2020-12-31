@@ -8,7 +8,7 @@
 #' are supposed to be stored in
 #' @param cut_off A character string containing the date at which the latest
 #' post in the thread should had been posted on. Has to be in the format
-#' \code{YYYY-MM-DD}. Defaults to \code{"2000-01-01"}.
+#' \code{YYYY-MM-DD}. Defaults to \code{"1970-01-01"}.
 #' @param delay flashback.org's robots.txt-file asks for putting a five
 #' second delay between each iteration. You can deliberately ignore this by
 #' setting \code{delay = FALSE}. Note that THIS IS NOT RECOMMENDED!
