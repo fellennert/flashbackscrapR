@@ -7,7 +7,7 @@
 #' to start with \code{/}.
 #' @param cut_off A character string containing the date at which the latest
 #' post in the thread should had been posted on. Has to be in the format
-#' \code{YYYY-MM-DD}. Defaults to \code{"2000-01-01"}.
+#' \code{YYYY-MM-DD}. Defaults to \code{"1970-01-01"}.
 #' @param title A logical vector. If \code{TRUE}, the thread title is returned
 #' as well.
 #' @param delay flashback.org's robots.txt-file asks for putting a five
