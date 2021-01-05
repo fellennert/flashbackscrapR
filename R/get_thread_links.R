@@ -51,7 +51,7 @@ get_thread_links <- function(suffix, cut_off = "1970-01-01", delay = TRUE, pure_
     return(
       tibble::tibble(
         links = thread_links %>% purrr::compact() %>% purrr::reduce(c),
-        date = thread_dates %>% purrr::compact() %>% purrr::reduce(c)
+        date = thread_dates %>% purrr::compact() %>% purrr::reduce(c) %>% lubridate::ymd()
       ) %>%
       dplyr::filter(date >= lubridate::ymd(cut_off)) %>%
       dplyr::pull(links))
@@ -59,7 +59,7 @@ get_thread_links <- function(suffix, cut_off = "1970-01-01", delay = TRUE, pure_
 
   tibble::tibble(
     links = thread_links %>% purrr::compact() %>% purrr::reduce(c),
-    date = thread_dates %>% purrr::compact() %>% purrr::reduce(c),
+    date = thread_dates %>% purrr::compact() %>% purrr::reduce(c) %>% lubridate::ymd(),
     title = thread_titles %>% purrr::compact() %>% purrr::reduce(c)
     ) %>%
     dplyr::filter(date >= lubridate::ymd(cut_off))
