@@ -293,3 +293,19 @@ scrape_large_thread <- function(suffix, urls = url_vec, export_csv, folder_name,
   }
   output_tbl
 }
+
+# fix quoted user names
+
+fix_quoted_authors <- function(thread) {
+  authors <- thread %>% 
+    dplyr::distinct(author_name) %>% 
+    dplyr::mutate(clean_name = author_name %>% 
+                    stringr::str_replace_all("[^[:alnum:]]", " ") %>% 
+                    stringr::str_squish()) 
+  
+  thread %>% 
+    dplyr::mutate(quoted_user = stringr::str_extract_all(posting, authors$clean_name %>% stringr::str_c(collapse = "|")) %>% 
+                    purrr::map(unique) %>% 
+                    purrr::map(stringr::str_c, collapse = ",") %>% 
+                    stringr::str_replace_all(purrr::set_names(authors$author_name, authors$clean_name)))
+}

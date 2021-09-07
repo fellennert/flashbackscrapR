@@ -95,7 +95,8 @@ scrape_thread_content <- function(suffix, export_csv = FALSE, folder_name = NULL
                                         TRUE ~ author_name),
          author_link = dplyr::case_when(is.na(author_name) == TRUE ~ NA_character_,
                                         TRUE ~ author_link)) %>%
-    dplyr::arrange(date, time)
+    dplyr::arrange(date, time) %>% 
+    fix_quoted_authors
 
   if (export_csv == TRUE) save_it(folder_name, file_name, output_tbl)
   if (export_csv == FALSE & is.null(folder_name) == FALSE | is.null(file_name) == FALSE) {
